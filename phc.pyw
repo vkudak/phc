@@ -154,17 +154,17 @@ class MyApp(wx.App):
 
     def On_m0_ch(self, evt):
         print self.chb_mo.GetValue()
-        if self.chb_mo.GetValue() == True:
-            self.btn_eph.Disable()
-        else:
-            self.btn_eph.Enable()
+        # if self.chb_mo.GetValue() == True:
+        #     self.btn_eph.Disable()
+        # else:
+        #     self.btn_eph.Enable()
 
     def On_Ninst_ch(self, evt):
         print self.chb_inst.GetValue()
-        if self.chb_inst.GetValue() == True:
-            self.btn_eph.Disable()
-        else:
-            self.btn_eph.Enable()
+        # if self.chb_inst.GetValue() == True:
+        #     self.btn_eph.Disable()
+        # else:
+        #     self.btn_eph.Enable()
 
     def OnOpen(self, evt):
         self.list_box.Clear()
@@ -384,11 +384,12 @@ class MyApp(wx.App):
         Rg = np.array([])
         wildcard = "TLE(*.tle,*.txt)|*.tle;*.TLE;*.txt;*.TXT| S3(*.s3)|*.s3"
         dlg = wx.FileDialog(
-        self.frame, message="Choose ephemeris File or TLE File",
-        defaultDir=os.getcwd(),
-        defaultFile='',
-        wildcard=wildcard,
-        style=wx.OPEN | wx.CHANGE_DIR)
+            self.frame, message="Choose ephemeris File or TLE File",
+            defaultDir=os.getcwd(),
+            defaultFile='',
+            wildcard=wildcard,
+            style=wx.OPEN | wx.CHANGE_DIR
+        )
         if dlg.ShowModal() == wx.ID_OK:
             paths = dlg.GetPaths()
             for path in paths:
@@ -572,10 +573,14 @@ class MyApp(wx.App):
             SAT.B = np.array(SAT.B)
             minB = SAT.B.min(axis=0)
             maxB = SAT.B.max(axis=0)
+            if (maxB == 65535) and (SAT.B.mean(axis=0) == 65535):
+                maxB = 0
         if len(SAT.V) > 0:
             SAT.V = np.array(SAT.V)
             minV = SAT.V.min(axis=0)
             maxV = SAT.V.max(axis=0)
+            if (maxV == 65535) and (SAT.V.mean(axis=0) == 65535):
+                maxV = 0
         #print 'MIN=',minB, minV
         #print 'MAX=',maxB, maxV
         plt.rcParams['figure.figsize'] = 12, 6
@@ -591,28 +596,55 @@ class MyApp(wx.App):
             plt.plot(range(SAT.c), SAT.V, 'g-')
         plt.show()
 
+        if NORAD == '':
+            #TryFindNames(NAME) # write!!!!!!!!!!!!!!!!!!
+            tle = []
+            if tle == []:
+                for i in range(0, len(TLE_list)):
+                    l2 = TLE_list[i][1].split()
+                    name = TLE_list[i][0]
+                    if name == NAME:
+                        COSPAR = l2[2]
+                        NORAD = l2[1]
+                        NAME = TLE_list[i][0]
+                        tle = TLE_list[i]
+
         dlg = wx.MessageDialog(self.frame, 'Save file?', 'Save dialog', wx.YES | wx.NO)
         if dlg.ShowModal() == wx.ID_YES:
             ''' SAVE RESULT'''
+            # print "PATH=", os.getcwd() + '/' + NAME
             wildcard = "PHC(*.phc)|*.phc| UMOSS(*.umoss)|*.umoss| PH1(*.ph1)|*.ph1"
+            if not os.path.exists(os.getcwd() + '/' + NAME):
+                os.makedirs(os.getcwd() + '/' + NAME)
             dlgS = wx.FileDialog(
-            self.frame, message="Save File in different formats",
-            defaultDir=os.getcwd(),
-            defaultFile=NAME + '.phc',
-            wildcard=wildcard,
-            style=wx.SAVE | wx.CHANGE_DIR)
+                self.frame, message="Save File in different formats",
+                defaultDir=os.getcwd() + '/' + NAME,
+                defaultFile=NAME + '.phc',
+                wildcard=wildcard,
+                style=wx.SAVE | wx.CHANGE_DIR
+            )
             if dlgS.ShowModal() == wx.ID_OK:
                 ffpath = dlgS.GetPaths()[0]
                 if dlgS.GetFilterIndex() == 0 and not ffpath.endswith(".phc"):
-                    ffpath = ffpath + ".phc"
+                    ffpath += ".phc"
                 if dlgS.GetFilterIndex() == 1 and not ffpath.endswith(".umoss"):
-                    ffpath = ffpath + ".umoss"
+                    ffpath += ".umoss"
                 if dlgS.GetFilterIndex() == 2 and not ffpath.endswith(".ph1"):
-                    ffpath = ffpath + ".ph1"
+                    ffpath += ".ph1"
                 ext = os.path.splitext(ffpath)
                 ext = ext[1]
-                #if NORAD='':
-                    #TryFindNames(NAME) # write!!!!!!!!!!!!!!!!!!
+                # if NORAD == '':
+                #     #TryFindNames(NAME) # write!!!!!!!!!!!!!!!!!!
+                #     tle = []
+                #     if tle == []:
+                #         for i in range(0, len(TLE_list)):
+                #             l2 = TLE_list[i][1].split()
+                #             name = TLE_list[i][0]
+                #             if name == NAME:
+                #                 COSPAR = l2[2]
+                #                 NORAD = l2[1]
+                #                 NAME = TLE_list[i][0]
+                #                 tle = TLE_list[i]
                 if ext == '.umoss':
                     p = os.path.dirname(ffpath)
                     d0 = datetime.strptime(SAT.Date.strip().replace(" ", "") +
@@ -693,16 +725,8 @@ class MyApp(wx.App):
                     f1.write(d2 + '\n')
                     f2.write(d1 + '\n')
                     f2.write(d2 + '\n')
-                    if tle:
-                        f1.write('%\n%' + tle_lines[0] + '\n')
-                        f1.write('%' + tle_lines[1] + '\n')
-                        f1.write('%' + tle_lines[2] + '\n%\n')
-                        f2.write('%\n%' + tle_lines[0] + '\n')
-                        f2.write('%' + tle_lines[1] + '\n')
-                        f2.write('%' + tle_lines[2] + '\n%\n')
-                    else:
-                        f1.write('% \n')
-                        f2.write('% \n')
+                    f1.write('% \n')
+                    f2.write('% \n')
                     f1.write('Time (MJD)        N_inst\n')
                     f2.write('Time (MJD)        N_inst\n')
                     for i in range(SAT.c):
