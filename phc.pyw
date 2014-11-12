@@ -605,7 +605,7 @@ class MyApp(wx.App):
                     name = TLE_list[i][0]
                     if name == NAME:
                         COSPAR = l2[2]
-                        NORAD = l2[1]
+                        NORAD = l2[1][:-1]
                         NAME = TLE_list[i][0]
                         tle = TLE_list[i]
 
