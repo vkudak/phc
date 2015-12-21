@@ -8,6 +8,7 @@ import wx
 import wx.xrc as xrc
 
 import matplotlib.pyplot as plt
+from matplotlib.dates import DateFormatter
 import os
 import locale
 import ephem
@@ -226,11 +227,24 @@ class MyApp(wx.App):
             dt = glist[item].dt
             UT = glist[item].Time
             Data = glist[item].Date.strip()
+            print UT
+            j = 0
+            Tt = []
+            UTd = datetime.strptime(Data+' '+UT, "%d.%m.%y %H:%M:%S")
+            while j < glist[item].c:
+                Tt.append(UTd+timedelta(seconds=j*dt))
+                j = j + 1
+            # print(Tt)
+            timeFmt = DateFormatter("%H:%M:%S")
             locale.setlocale(locale.LC_NUMERIC, 'C')  # for graph
             if np.mean(glist[item].B) != 65535:
-                plt.plot(range(glist[item].c), glist[item].B, 'b-')
+                # plt.plot(range(glist[item].c), glist[item].B, 'b-')
+                plt.plot(Tt, glist[item].B, 'b-')
             if np.mean(glist[item].V) != 65535:
-                plt.plot(range(glist[item].c), glist[item].V, 'g-')
+                # plt.plot(range(glist[item].c), glist[item].V, 'g-')
+                plt.plot(Tt, glist[item].V, 'g-')
+            ax = plt.gca()
+            ax.xaxis.set_major_formatter(timeFmt)
             Mean_B = np.mean(glist[item].B)
             Mean_V = np.mean(glist[item].V)
             STD_B = np.std(glist[item].B, axis=0)
@@ -600,17 +614,39 @@ class MyApp(wx.App):
                 maxV = 0
         # print 'MIN=',minB, minV
         # print 'MAX=',maxB, maxV
+        # NENT is added to get time on xaxis and graph title
+        jj = 0
+        Tt = []
+        timeFmt = DateFormatter("%H:%M:%S")
+        UTd = datetime.strptime(SAT.Date.strip()+' '+SAT.Time, "%d.%m.%y %H:%M:%S")
+        print UTd
+        while jj < SAT.c:
+            Tt.append(UTd+timedelta(seconds=jj*SAT.dt))
+            jj = jj + 1
+        # ##########################################################################
         plt.rcParams['figure.figsize'] = 12, 6
-        # plt.figure('B and V Filters')   matplot ver 1.01 ??????
+        Tmin = min(Tt)
+        Tmax = max(Tt)
+        if np.mean(SAT.B) == MAX_M:
+            minB = minV
+            maxB = maxV
+        if np.mean(SAT.V) == MAX_M:
+            minV = minB
+            maxV = maxB
         if self.chb_inst.GetValue() is False:
-            plt.axis([0, SAT.c, max(maxB, maxV), min(minB, minV)])
+            plt.axis([Tmin, Tmax, max(maxB, maxV), min(minB, minV)])
         else:
-            plt.axis([0, SAT.c, min(minB, minV), max(maxB, maxV)])
+            plt.axis([Tmin, Tmax, min(minB, minV), max(maxB, maxV)])
         locale.setlocale(locale.LC_NUMERIC, 'C')  # for graph
+
         if np.mean(SAT.B) != MAX_M:  # 65535:
-            plt.plot(range(SAT.c), SAT.B, 'b-')
+            plt.plot(Tt, SAT.B, 'b-', label="B")
         if np.mean(SAT.V) != MAX_M:  # 65535:
-            plt.plot(range(SAT.c), SAT.V, 'g-')
+            plt.plot(Tt, SAT.V, 'g-', label="V")
+        ax = plt.gca()
+        ax.xaxis.set_major_formatter(timeFmt)
+        ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
+        plt.title("Satellite=%s \n Date=%s  UT=%s   dt=%s" % (NAME, SAT.Date.strip(), SAT.Time, str(SAT.dt)))
         plt.show()
 
         if NORAD == '':
