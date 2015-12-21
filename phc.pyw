@@ -121,6 +121,7 @@ class MyApp(wx.App):
             self.frame.Bind(wx.EVT_LISTBOX_DCLICK, self.OnListDk, id=xrc.XRCID('lb_nps'))
             self.frame.Bind(wx.EVT_CHECKBOX, self.On_m0_ch, id=xrc.XRCID('checkbox_1'))
             self.frame.Bind(wx.EVT_CHECKBOX, self.On_Ninst_ch, id=xrc.XRCID('checkbox_2'))
+            self.frame.Bind(wx.EVT_CHECKBOX, self.On_NSfon, id=xrc.XRCID('checkbox_3'))
             self.frame.Bind(wx.EVT_BUTTON, self.OnNPS_graph, id=xrc.XRCID('btn_nps_graph'))
 
             self.Bind(wx.EVT_BUTTON, self.OnStand, id=xrc.XRCID("btn_phot_calc"))
@@ -165,6 +166,18 @@ class MyApp(wx.App):
         #     self.btn_eph.Disable()
         # else:
         #     self.btn_eph.Enable()
+
+    def On_NSfon(self, evt):
+        self.lb_nps.SetString(0, "NPS-0=2-3")
+        self.lb_nps.SetString(1, "NPS-1=4-5")
+        self.lb_nps.SetString(2, "NPS-2=6-7")
+        self.lb_nps.SetString(3, "NPS-3=8-9")
+        self.lb_nps.SetString(4, "NPS-4=10-11")
+        self.lb_nps.SetString(5, "NPS-5=12-13")
+        self.lb_nps.SetString(6, "NPS-6=14-15")
+        self.lb_nps.SetString(7, "NPS-7=16-17")
+        self.lb_nps.SetString(8, "NPS-8=18-19")
+
 
     def OnOpen(self, evt):
         self.list_box.Clear()
@@ -457,19 +470,21 @@ class MyApp(wx.App):
         station.elevation = 231.1325
 
         sat = ephem.readtle(tle[0], tle[1], tle[2])
-        station.date = datetime.strptime(date.strip().replace(" ", "") +
-                                         ' ' + time, "%d.%m.%y %H:%M:%S")
+        try:
+            station.date = datetime.strptime(date.strip().replace(" ", "") + ' ' + time, "%d.%m.%y %H:%M:%S.%f")
+        except Exception:
+            print "Error. Trying Options #2 - time without seconds fractions"
+            station.date = datetime.strptime(date.strip().replace(" ", "") + ' ' + time, "%d.%m.%y %H:%M:%S")
         el = []
         rg = []
         print station.date
-        j = 0
+        j = 1
         while j < count:
-        #for j in range(0, count):
             sat.compute(station)
             el.append(m.degrees(sat.alt))
             rg.append(sat.range / 1000.0)  # km
             station.date = ephem.Date(station.date + dt / 3600 / 24)
-            #print station.date, sat.alt, sat.range
+            # print station.date, sat.alt, sat.range
             j = j + 1
         no = no[:-1]  # no U
         return el, rg, n, no, c, tle
