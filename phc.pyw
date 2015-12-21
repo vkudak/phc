@@ -1,21 +1,24 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-'''
+"""
 This is a main unit of Photometry curves standardization program
 Dependences: wx, matplotlib, ephem, numpy
-'''
-
+"""
 import wx
 import wx.xrc as xrc
-wx = wx  # just the trick :)
+
 import matplotlib.pyplot as plt
-import os, locale, ephem
-import rw, pu  # additional units
+import os
+import locale
+import ephem
+import rw  # additional units
+import pu  # additional units
 
 import numpy as np
 import math as m
 from datetime import datetime, timedelta
 from copy import deepcopy as copy
+wx = wx  # just the trick :)
 
 glist = []
 mV = []
@@ -23,7 +26,7 @@ mB = []
 RA, DEC = [], []
 Avs = 0
 Abs = 0
-#SAT=rw.group()
+# SAT=rw.group()
 El, Rg = [], []
 tle = False
 TLE_list = []
@@ -32,12 +35,12 @@ self_path = ''  # global path to pch.pyw
 
 def mjd(utc_time):
     dt = utc_time - datetime(2000, 1, 1, 12, 0)
-    jd = (dt.days + (dt.seconds + dt.microseconds / (1000000.0)) / (24 * 3600.0) + 51544.5)
+    jd = (dt.days + (dt.seconds + dt.microseconds / 1000000.0) / (24 * 3600.0) + 51544.5)
     return jd  # - 2400000.5     + 2451545
 
 
 def readNPS():
-    '''read NPS Catalog'''
+    """ read NPS Catalog """
     global self_path
     if os.path.exists(self_path + '//NPS.cat'):
         f = open(self_path + '//NPS.cat', 'r')
@@ -78,7 +81,7 @@ class MyApp(wx.App):
             self.notebook = xrc.XRCCTRL(self.frame, "Notebook")
             self.StatusBar = xrc.XRCCTRL(self.frame, "MFrame_statusbar")
 
-            ###NPS controls
+            # NPS controls
             self.lb_nps = xrc.XRCCTRL(self.frame, "lb_nps")
 
             self.lb_nps.SetString(0, "NPS-0=3-4")
@@ -89,16 +92,16 @@ class MyApp(wx.App):
             self.lb_nps.SetString(5, "NPS-5=13-14")
             self.lb_nps.SetString(6, "NPS-6=15-16")
             self.lb_nps.SetString(7, "NPS-7=17-18")
-            #self.lb_nps.SetString(8, "NPS-8=19-20")
-            #self.lb_nps.SetString(9, "NPS-9=21-22")
-            #self.lb_nps.SetString(10, "NPS-10=23-24")
+            # self.lb_nps.SetString(8, "NPS-8=19-20")
+            # self.lb_nps.SetString(9, "NPS-9=21-22")
+            # self.lb_nps.SetString(10, "NPS-10=23-24")
 
             self.lb_nps_res = xrc.XRCCTRL(self.frame, "lb_nps_res")
             self.tc_cb = xrc.XRCCTRL(self.frame, "tc_cb")
             self.tc_cv = xrc.XRCCTRL(self.frame, "tc_cv")
             self.rb = xrc.XRCCTRL(self.frame, "radio_box_nps")
 
-            ###Standardization controls
+            # Standardization controls
             self.sc_sat_gr = xrc.XRCCTRL(self.frame, "spin_ctrl_1")
             self.sc_sfon_gr = xrc.XRCCTRL(self.frame, "spin_ctrl_2")
             self.chb_mo = xrc.XRCCTRL(self.frame, "checkbox_1")
@@ -110,9 +113,9 @@ class MyApp(wx.App):
             self.tc_name = xrc.XRCCTRL(self.frame, "text_ctrl_8")
             self.cb_intr = xrc.XRCCTRL(self.frame, "combo_box_1")
             self.btn_eph = xrc.XRCCTRL(self.frame, "button_2")
-            #self.btn_phc=xrc.XRCCTRL(self.frame,"btn_phot_calc")
+            # self.btn_phc=xrc.XRCCTRL(self.frame,"btn_phot_calc")
 
-            ####Binds
+            # Binds
             self.frame.Bind(wx.EVT_MENU, self.OnOpen, id=xrc.XRCID('Open'))
             self.frame.Bind(wx.EVT_MENU, self.OnAddNPS, id=xrc.XRCID('Add_nps'))
             self.frame.Bind(wx.EVT_MENU, self.OnQuit, id=xrc.XRCID('Exit'))
@@ -127,10 +130,10 @@ class MyApp(wx.App):
             self.Bind(wx.EVT_BUTTON, self.OnStand, id=xrc.XRCID("btn_phot_calc"))
             self.Bind(wx.EVT_BUTTON, self.OnEph, id=xrc.XRCID("button_2"))
             self.Bind(wx.EVT_KEY_DOWN, self.OnKeyLb, id=xrc.XRCID('lb_nps'))
-            #self.Bind(wx.EVT_CHAR, self.OnKeyFrame)
+            # self.Bind(wx.EVT_CHAR, self.OnKeyFrame)
             ######
 
-            self.frame.Size = (500, 400)
+            self.frame.Size = (500, 500)
             self.frame.Show()
             global self_path
             self_path = os.path.dirname(os.path.abspath(__file__))
@@ -178,7 +181,6 @@ class MyApp(wx.App):
         self.lb_nps.SetString(7, "NPS-7=16-17")
         self.lb_nps.SetString(8, "NPS-8=18-19")
 
-
     def OnOpen(self, evt):
         self.list_box.Clear()
         self.tc_cospar.SetValue('')
@@ -186,7 +188,7 @@ class MyApp(wx.App):
         self.tc_name.SetValue('')
         wildcard = "TXT(*.txt)|*.txt;*.TXT"
         dlg = wx.FileDialog(self.frame, message="Choose File", defaultDir=os.getcwd(),
-        defaultFile='', wildcard=wildcard, style=wx.OPEN | wx.CHANGE_DIR)
+                            defaultFile='', wildcard=wildcard, style=wx.OPEN | wx.CHANGE_DIR)
         if dlg.ShowModal() == wx.ID_OK:
             paths = dlg.GetPaths()
             for path in paths:
@@ -203,7 +205,7 @@ class MyApp(wx.App):
     def OnAddNPS(self, evt):
         wildcard = "TXT(*.txt)|*.txt;*.TXT"
         dlg = wx.FileDialog(self.frame, message="Choose File", defaultDir=os.getcwd(),
-        defaultFile='', wildcard=wildcard, style=wx.OPEN | wx.CHANGE_DIR)
+                            defaultFile='', wildcard=wildcard, style=wx.OPEN | wx.CHANGE_DIR)
         if dlg.ShowModal() == wx.ID_OK:
             paths = dlg.GetPaths()
             for path in paths:
@@ -220,7 +222,7 @@ class MyApp(wx.App):
         plt.rcParams['figure.figsize'] = 12, 6
         if glist != []:
             item = self.list_box.GetSelection() + 1
-            #plt.figure('Group #' + str(item))
+            # plt.figure('Group #' + str(item))
             dt = glist[item].dt
             UT = glist[item].Time
             Data = glist[item].Date.strip()
@@ -254,11 +256,11 @@ class MyApp(wx.App):
         plt.show()
 
     def OnNPS_calc(self, evt):
-        #print self.rb.GetStringSelection()
+        # print self.rb.GetStringSelection()
         if readNPS() == 0:
             Warn(self.frame, 'Can''t find NPS Catalog NPS.cat')
             return
-            #exit()
+            # exit()
         if len(glist) == 0:
             Warn(self.frame, "Open some file first")
             return
@@ -272,7 +274,7 @@ class MyApp(wx.App):
             if len(q) > 1:
                 n = q[0].split('-')[1]
                 NPS[int(n)] = q[1].split('-')
-        #print NPS
+        # print NPS
         star = []
         # Ab = []
         # Av = []
@@ -291,7 +293,7 @@ class MyApp(wx.App):
                     st.DEC = DEC[i]
                     st.UT = glist[ind1].Time
                     st_date = glist[ind1].Date
-                    #print st.RA/15, st.DEC, st.UT
+                    # print st.RA/15, st.DEC, st.UT
                     station = ephem.Observer()
                     station.lat = '48.5635505'
                     station.long = '22.453751'
@@ -307,7 +309,7 @@ class MyApp(wx.App):
                         y = y + 2000
                     station.date = '%i/%s/%s %s' % (y, month.strip(), day.strip(), st.UT)
                     starr.compute(station)
-                    #print m.degrees(starr.alt)
+                    # print m.degrees(starr.alt)
                     st.Mz = 1 / m.cos(m.radians(90 - m.degrees(starr.alt)))
 
                 st.B = np.array(glist[ind1].B)
@@ -463,7 +465,7 @@ class MyApp(wx.App):
                     n = TLE_list[i][0]
                     tle = TLE_list[i]
 
-        ### Calculating  El, Rg
+        # Calculating  El, Rg
         station = ephem.Observer()
         station.lat = '48.5635505'
         station.long = '22.453751'
@@ -498,7 +500,7 @@ class MyApp(wx.App):
         NORAD = self.tc_norad.GetValue()
         NAME = self.tc_name.GetValue()
         if NAME == '' and NORAD == '' and COSPAR == '':
-            Warn(self.frame, 'No satelite NAME or NUMBER entered!')
+            Warn(self.frame, 'No satellite NAME or NUMBER entered!')
             return  # exit()
         if int(self.sc_sfon_gr.GetValue()) > 0:
             sn = self.sc_sat_gr.GetValue()
@@ -537,7 +539,7 @@ class MyApp(wx.App):
         else:  # No FON
             sn = self.sc_sat_gr.GetValue()
             SAT = copy(glist[sn])
-        ###Standardization
+        # Standardization
         global Abs
         global Avs
         if self.chb_inst.GetValue() is False:
@@ -552,7 +554,7 @@ class MyApp(wx.App):
                     SAT.V[i] = MAX_M  # **************
                 else:
                     SAT.V[i] = -2.5 * m.log10(SAT.V[i]) + Avs
-        #m_z and m_ro#
+        # m_z and m_ro#
         if (self.chb_mo.GetValue() == False) and (self.chb_inst.GetValue() == False):  # if ephemeris is present
             global tle
             print "tle file=", tle
@@ -571,7 +573,7 @@ class MyApp(wx.App):
                 NORAD = nor
                 NAME = name
             for i in range(SAT.c):
-                #print i ##m.radians
+                # print i ##m.radians
                 if self.rb.GetSelection == 1:  # Mean A coefficient
                     mz = 1 / m.cos(m.radians(42)) - 1 / m.cos(m.radians(90 - El[i]))
                 else:  # Graphical way
@@ -583,7 +585,7 @@ class MyApp(wx.App):
                     SAT.B[i] = SAT.B[i] - mzb + mr  # + or-  Mz ???
                 if SAT.V[i] != MAX_M:
                     SAT.V[i] = SAT.V[i] - mzv + mr
-        #Graphic!!!
+        # Graphic!!!
         if len(SAT.B) > 0:
             SAT.B = np.array(SAT.B)
             minB = SAT.B.min(axis=0)
@@ -596,10 +598,10 @@ class MyApp(wx.App):
             maxV = SAT.V.max(axis=0)
             if (maxV == 65535) and (SAT.V.mean(axis=0) == 65535):
                 maxV = 0
-        #print 'MIN=',minB, minV
-        #print 'MAX=',maxB, maxV
+        # print 'MIN=',minB, minV
+        # print 'MAX=',maxB, maxV
         plt.rcParams['figure.figsize'] = 12, 6
-        #plt.figure('B and V Filters')   matplot ver 1.01 ??????
+        # plt.figure('B and V Filters')   matplot ver 1.01 ??????
         if self.chb_inst.GetValue() is False:
             plt.axis([0, SAT.c, max(maxB, maxV), min(minB, minV)])
         else:
@@ -612,7 +614,7 @@ class MyApp(wx.App):
         plt.show()
 
         if NORAD == '':
-            #TryFindNames(NAME) # write!!!!!!!!!!!!!!!!!!
+            # TryFindNames(NAME) # write!!!!!!!!!!!!!!!!!!
             tle = []
             if tle == []:
                 for i in range(0, len(TLE_list)):
@@ -667,7 +669,7 @@ class MyApp(wx.App):
                     d1 = d0.strftime("%Y.%m.%d - %H:%M:%S")
                     d2 = d0 + timedelta(seconds=SAT.c * SAT.dt)
                     d2 = d2.strftime("%Y.%m.%d - %H:%M:%S")
-                    ###   B chanel
+                    # B chanel
                     ff1 = p + '//' + NORAD + '_' + d0.strftime("%y%m%d_%H%M") + 'B.U11'
                     ff2 = p + '//' + NORAD + '_' + d0.strftime("%y%m%d_%H%M") + 'V.U11'
                     f1 = open(ff1, 'w')
@@ -716,7 +718,7 @@ class MyApp(wx.App):
                     d1 = d0.strftime("%Y.%m.%d - %H:%M:%S")
                     d2 = d0 + timedelta(seconds=SAT.c * SAT.dt)
                     d2 = d2.strftime("%Y.%m.%d - %H:%M:%S")
-                    ###   B chanel
+                    # B chanel
                     ff1 = p + '//' + NORAD + '_' + d0.strftime("%y%m%d_%H%M") + 'B.U11'
                     ff2 = p + '//' + NORAD + '_' + d0.strftime("%y%m%d_%H%M") + 'V.U11'
                     f1 = open(ff1, 'w')
@@ -764,12 +766,12 @@ class MyApp(wx.App):
                     f.write('COSPAR ID=' + COSPAR + '\n')
                     f.write('NORAD ID=' + NORAD + '\n')
                     f.write('NAME=' + NAME + '\n')
-                    if self.chb_mo.GetValue() == True:
+                    if self.chb_mo.GetValue():
                         f.write("NO standardization for mZ an Range... only m0 magnitude is given!!! \n")
-                    if self.chb_inst.GetValue() == True:
+                    if self.chb_inst.GetValue():
                         f.write("NO magnitudes... only instrument count is given!!! \n")
 
-                    if self.chb_inst.GetValue() == False:
+                    if not self.chb_inst.GetValue():
                         f.write('  UT TIME            mB      mV      El(deg) Rg(Mm) \n')
                     else:
                         f.write('  UT TIME           N_B     N_V      El(deg) Rg(Mm) \n')
@@ -779,7 +781,7 @@ class MyApp(wx.App):
                         f.write(T.strftime('%H:%M:%S.%f'))
                         f.write(str("  %8.3f" % SAT.B[i]))
                         f.write(str("%8.3f" % SAT.V[i]))
-                        if self.chb_mo.GetValue() == False:
+                        if not self.chb_mo.GetValue():
                             f.write("    %5.3f  %5.3f \n" % (El[i], Rg[i]))
                         else:
                             f.write('\n')
