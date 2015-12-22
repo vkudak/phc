@@ -230,7 +230,7 @@ class MyApp(wx.App):
             print UT
             j = 0
             Tt = []
-            UTd = datetime.strptime(Data+' '+UT, "%d.%m.%y %H:%M:%S")
+            UTd = datetime.strptime(Data.replace(" ", "")+' '+UT, "%d.%m.%y %H:%M:%S")
             while j < glist[item].c:
                 Tt.append(UTd+timedelta(seconds=j*dt))
                 j = j + 1
@@ -508,6 +508,7 @@ class MyApp(wx.App):
     def OnStand(self, evt):
         global glist
         MAX_M = 15
+        MAX_N = 65535
         Kb = float(self.tc_kb.GetValue())
         Kv = float(self.tc_kv.GetValue())
         COSPAR = self.tc_cospar.GetValue()
@@ -618,7 +619,7 @@ class MyApp(wx.App):
         jj = 0
         Tt = []
         timeFmt = DateFormatter("%H:%M:%S")
-        UTd = datetime.strptime(SAT.Date.strip()+' '+SAT.Time, "%d.%m.%y %H:%M:%S")
+        UTd = datetime.strptime(SAT.Date.strip().replace(" ", "")+' '+SAT.Time, "%d.%m.%y %H:%M:%S")
         print UTd
         while jj < SAT.c:
             Tt.append(UTd+timedelta(seconds=jj*SAT.dt))
@@ -639,9 +640,9 @@ class MyApp(wx.App):
             plt.axis([Tmin, Tmax, min(minB, minV), max(maxB, maxV)])
         locale.setlocale(locale.LC_NUMERIC, 'C')  # for graph
 
-        if np.mean(SAT.B) != MAX_M:  # 65535:
+        if np.mean(SAT.B) not in [MAX_M, MAX_N]:  # 65535:
             plt.plot(Tt, SAT.B, 'b-', label="B")
-        if np.mean(SAT.V) != MAX_M:  # 65535:
+        if np.mean(SAT.V) not in [MAX_M, MAX_N]:  # 65535:
             plt.plot(Tt, SAT.V, 'g-', label="V")
         ax = plt.gca()
         ax.xaxis.set_major_formatter(timeFmt)
@@ -817,7 +818,7 @@ class MyApp(wx.App):
                         f.write(T.strftime('%H:%M:%S.%f'))
                         f.write(str("  %8.3f" % SAT.B[i]))
                         f.write(str("%8.3f" % SAT.V[i]))
-                        if not self.chb_mo.GetValue():
+                        if (not self.chb_mo.GetValue()) and (not self.chb_inst.GetValue()):
                             f.write("    %5.3f  %5.3f \n" % (El[i], Rg[i]))
                         else:
                             f.write('\n')
