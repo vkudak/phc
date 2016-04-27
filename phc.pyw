@@ -198,8 +198,9 @@ class MyApp(wx.App):
                     glist = rw.read(path)
                     for N in range(1, len(glist)):
                         self.list_box.Append('Gr#' + str(N) + '-' + str(glist[N].c))
-                except:
-                    Warn(self.frame, "Wrong wile format probably")
+                except Exception as E:
+                    Warn(self.frame, "Wrong file format probably")
+                    print E.args
             self.StatusBar.SetStatusText('FileName=' + os.path.basename(path), 0)
         dlg.Destroy()
 
@@ -369,7 +370,7 @@ class MyApp(wx.App):
                 plt.plot([m_min, m_max], [kv * m_min + Avs, kv * m_max + Avs], 'g')
 
             if len(Zb) > 0:
-                kb, Abs, res = pu.lsqFit(Zb, Mzab)
+                kb, Abs, res, inddd = pu.lsqFit(Zb, Mzab)
                 while res > 0.1:
                     X = 0
                     for j in range(0, len(Zb)):
@@ -401,7 +402,7 @@ class MyApp(wx.App):
                 self.lb_nps_res.Append('Av_StdDev=%2.4f' % res)
             if len(Zb) > 0:
                 Zb = pu.RMS_del(Zb, 0.1)
-                Avs = np.mean(Zb)
+                Abs = np.mean(Zb)
                 res = np.std(Zb)
                 self.lb_nps_res.Append('Ab=%2.4f' % Abs)
                 self.lb_nps_res.Append('Ab_StdDev=%2.4f' % res)
