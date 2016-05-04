@@ -1,8 +1,14 @@
 phc
 ===
 
-Photometry calibration program
+Photometry calibration program take TLE files, calculate constants and do photometric standardization 
 
-Starting from own LKD photometry format program take TLE files, calculate constants and do photometric standardization 
+Program also can produce data in UMOSS network formats PH1, PH3
 
-It also can convert data to UMOSS formats PH1, PH3
+###Requirements
+* wxPython
+* numpy
+* scipy
+* pyEphem
+* matplotlib
+
