@@ -381,7 +381,7 @@ class MyApp(wx.App):
                     Zb = np.delete(Zb, i)
                     print 'delete B', i
                     Mzab = np.delete(Mzab, i)
-                    kb, Abs, res = pu.lsqFit(Zb, Mzab)
+                    kb, Abs, res, inddd = pu.lsqFit(Zb, Mzab)
                 self.lb_nps_res.Append('Ab=%2.4f' % Abs)
                 self.lb_nps_res.Append('Ab_Residual=%2.4f' % res)
                 self.lb_nps_res.Append('Kb=%2.4f' % abs(kb))
