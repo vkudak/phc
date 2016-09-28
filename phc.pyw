@@ -368,6 +368,8 @@ class MyApp(wx.App):
                 m_min = np.min(Mza)
                 m_max = np.max(Mza)
                 plt.plot([m_min, m_max], [kv * m_min + Avs, kv * m_max + Avs], 'g')
+                plt.xlabel('Mz')
+                plt.ylabel('m_st - Cv*(B-V) - m_inst')
 
             if len(Zb) > 0:
                 kb, Abs, res, inddd = pu.lsqFit(Zb, Mzab)
@@ -450,61 +452,66 @@ class MyApp(wx.App):
         dlg.Destroy()
 
     def calc_from_tle(self, count, date, time, dt, COSPAR, NORAD, NAME):
-        tle = []
-        for i in range(0, len(TLE_list)):
-            l2 = TLE_list[i][1].split()
-            cosp = l2[2]
-            nor = l2[1]
-            name = TLE_list[i][0]
-            if cosp == COSPAR:
-                c = l2[2]
-                no = l2[1]
-                n = TLE_list[i][0]
-                tle = TLE_list[i]
-        if tle == []:
+        if COSPAR == '' and NORAD == '' and NAME == '':
+            return
+        else:
+            tle = []
             for i in range(0, len(TLE_list)):
                 l2 = TLE_list[i][1].split()
+                cosp = l2[2]
                 nor = l2[1]
-                if nor == NORAD:
-                    c = l2[2]
-                    no = l2[1]
-                    n = TLE_list[i][0]
-                    tle = TLE_list[i]
-        if tle == []:
-            for i in range(0, len(TLE_list)):
-                l2 = TLE_list[i][1].split()
                 name = TLE_list[i][0]
-                if name == NAME:
+                if cosp == COSPAR:
                     c = l2[2]
                     no = l2[1]
                     n = TLE_list[i][0]
                     tle = TLE_list[i]
+            if tle == []:
+                for i in range(0, len(TLE_list)):
+                    l2 = TLE_list[i][1].split()
+                    nor = l2[1]
+                    if nor == NORAD:
+                        c = l2[2]
+                        no = l2[1]
+                        n = TLE_list[i][0]
+                        tle = TLE_list[i]
+            if tle == []:
+                for i in range(0, len(TLE_list)):
+                    l2 = TLE_list[i][1].split()
+                    name = TLE_list[i][0]
+                    if name == NAME:
+                        c = l2[2]
+                        no = l2[1]
+                        n = TLE_list[i][0]
+                        tle = TLE_list[i]
+            if len(tle) > 0 :
+                # Calculating  El, Rg
+                station = ephem.Observer()
+                station.lat = '48.5635505'
+                station.long = '22.453751'
+                station.elevation = 231.1325
 
-        # Calculating  El, Rg
-        station = ephem.Observer()
-        station.lat = '48.5635505'
-        station.long = '22.453751'
-        station.elevation = 231.1325
-
-        sat = ephem.readtle(tle[0], tle[1], tle[2])
-        try:
-            station.date = datetime.strptime(date.strip().replace(" ", "") + ' ' + time, "%d.%m.%y %H:%M:%S.%f")
-        except Exception:
-            print "Error. Trying Options #2 - time without seconds fractions"
-            station.date = datetime.strptime(date.strip().replace(" ", "") + ' ' + time, "%d.%m.%y %H:%M:%S")
-        el = []
-        rg = []
-        print station.date
-        j = 1
-        while j < count:
-            sat.compute(station)
-            el.append(m.degrees(sat.alt))
-            rg.append(sat.range / 1000.0)  # km
-            station.date = ephem.Date(station.date + dt / 3600 / 24)
-            # print station.date, sat.alt, sat.range
-            j = j + 1
-        no = no[:-1]  # no U
-        return el, rg, n, no, c, tle
+                sat = ephem.readtle(tle[0], tle[1], tle[2])
+                try:
+                    station.date = datetime.strptime(date.strip().replace(" ", "") + ' ' + time, "%d.%m.%y %H:%M:%S.%f")
+                except Exception:
+                    print "Error. Trying Options #2 - time without seconds fractions"
+                    station.date = datetime.strptime(date.strip().replace(" ", "") + ' ' + time, "%d.%m.%y %H:%M:%S")
+                el = []
+                rg = []
+                print station.date
+                j = 1
+                while j < count:
+                    sat.compute(station)
+                    el.append(m.degrees(sat.alt))
+                    rg.append(sat.range / 1000.0)  # km
+                    station.date = ephem.Date(station.date + dt / 3600 / 24)
+                    # print station.date, sat.alt, sat.range
+                    j = j + 1
+                no = no[:-1]  # no U
+                return el, rg, n, no, c, tle
+            else:
+                return Warn(self.frame, 'Cant find TLE for such satellite!')
 
     def OnStand(self, evt):
         global glist
