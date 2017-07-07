@@ -24,6 +24,7 @@ wx = wx  # just the trick :)
 glist = []
 mV = []
 mB = []
+mR = []
 RA, DEC = [], []
 Avs = 0
 Abs = 0
@@ -66,6 +67,31 @@ def readNPS():
         return 0
 
 
+def read_phot_cat():
+    """ read photometry catalog """
+    global self_path
+    if os.path.exists(self_path + '//ph.cat'):
+        f = open(self_path + '//ph.cat', 'r')
+        f.readline()
+        global mV, mB, mR
+        global RA, DEC
+        mB, mV, mR = [], [], []
+        RA, DEC = [], []
+        for line in f:
+            if line[0] != '#':  # skip header
+                s = line.split()
+                mV.append(float(s[7]))
+                mB.append(float(s[8]))
+                mR.append(float(s[9]))
+                RA.append(m.degrees(float(s[1]) / 15))
+                DEC.append(m.degrees(float(s[2])))
+        f.close()
+        return 1
+    else:
+        print 'Can''t find photometric catalog ph.cat'
+        return 0
+
+
 def Warn(parent, message, caption='Warning!'):
     dlg = wx.MessageDialog(parent, message, caption, wx.OK | wx.ICON_WARNING)
     dlg.ShowModal()
@@ -100,6 +126,22 @@ class MyApp(wx.App):
             self.lb_nps_res = xrc.XRCCTRL(self.frame, "lb_nps_res")
             self.tc_cb = xrc.XRCCTRL(self.frame, "tc_cb")
             self.tc_cv = xrc.XRCCTRL(self.frame, "tc_cv")
+            self.tc_cr = xrc.XRCCTRL(self.frame, "tc_cr")
+
+            # Read Cb, Cv, Cr values from c_koef.conf file
+            path = os.path.dirname(os.path.abspath(__file__))
+            try:
+                if os.path.exists(path + '//c_koef.conf'):
+                    fc = open(path + '//c_koef.conf', 'r')
+                    fc.readline()
+                    c_val = fc.readline()
+                    cb, cv, cr = c_val.split()
+                    self.tc_cb.SetValue(cb)
+                    self.tc_cv.SetValue(cv)
+                    self.tc_cr.SetValue(cr)
+            except Exception as E:
+                    Warn(self.frame, "Cant read 'c_koef.conf' file. loading default Cb, Cv, Cr, values")
+
             self.rb = xrc.XRCCTRL(self.frame, "radio_box_nps")
 
             # Standardization controls
@@ -231,9 +273,9 @@ class MyApp(wx.App):
             print UT
             j = 0
             Tt = []
-            UTd = datetime.strptime(Data.replace(" ", "")+' '+UT, "%d.%m.%y %H:%M:%S")
+            UTd = datetime.strptime(Data.replace(" ", "") + ' ' + UT, "%d.%m.%y %H:%M:%S")
             while j < glist[item].c:
-                Tt.append(UTd+timedelta(seconds=j*dt))
+                Tt.append(UTd + timedelta(seconds=j*dt))
                 j = j + 1
             # print(Tt)
             timeFmt = DateFormatter("%H:%M:%S")
