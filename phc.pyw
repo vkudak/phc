@@ -26,8 +26,7 @@ mV = []
 mB = []
 mR = []
 RA, DEC = [], []
-Avs = 0
-Abs = 0
+Avs, Abs, Ars = 0, 0, 0
 # SAT=rw.group()
 El, Rg = [], []
 tle = False
@@ -324,6 +323,7 @@ class MyApp(wx.App):
         self.lb_nps_res.Clear()
         Cb = float(self.tc_cb.GetValue())
         Cv = float(self.tc_cv.GetValue())
+        Cr = float(self.tc_cr.GetValue())
         nps_list = self.lb_nps.GetItems()
         NPS = range(11)
         for nps in nps_list:
