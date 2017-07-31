@@ -243,7 +243,7 @@ class MyApp(wx.App):
         self.tc_name.SetValue('')
         wildcard = "TXT(*.txt)|*.txt;*.TXT"
         dlg = wx.FileDialog(self.frame, message="Choose File", defaultDir=os.getcwd(),
-                            defaultFile='', wildcard=wildcard, style=wx.OPEN | wx.CHANGE_DIR)
+                            defaultFile='', wildcard=wildcard, style=wx.FD_OPEN | wx.FD_CHANGE_DIR)
         if dlg.ShowModal() == wx.ID_OK:
             paths = dlg.GetPaths()
             for path in paths:
@@ -369,10 +369,8 @@ class MyApp(wx.App):
                 if len(q) > 1:
                     n = q[0].split('-')[1]  # NPS number
                     NPS[int(n)] = q[1].split('-')
-            print NPS
+            # print NPS
             star = []
-            # Ab = []
-            # Av = []
             Zb, Zv = [], []
             Mza = []
             for i in range(0, 11):
@@ -399,9 +397,9 @@ class MyApp(wx.App):
                         day, month, year = st_date.split('.')
                         y = int(year)
                         if y > 50:
-                            y = y + 1900
+                            y += 1900
                         else:
-                            y = y + 2000
+                            y += 2000
                         station.date = '%i/%s/%s %s' % (y, month.strip(), day.strip(), st.UT)
                         starr.compute(station)
                         # print m.degrees(starr.alt)
@@ -420,7 +418,7 @@ class MyApp(wx.App):
                     # print i, st.ImpV, st.RMSv
 
                     if st.ImpB > 0:
-                        Zb.append(st.mB - Cb * (st.bmv) + 2.5 * m.log10(st.ImpB))
+                        Zb.append(st.mB + Cb * (st.bmv) + 2.5 * m.log10(st.ImpB))
                     if st.ImpV > 0:
                         Zv.append(st.mV - Cv * (st.bmv) + 2.5 * m.log10(st.ImpV))
                     Mza.append(st.Mz)
@@ -784,7 +782,7 @@ class MyApp(wx.App):
                 defaultDir=os.getcwd() + '/' + NAME,
                 defaultFile=NAME + '.phc',
                 wildcard=wildcard,
-                style=wx.SAVE | wx.CHANGE_DIR
+                style=wx.FD_SAVE | wx.FD_CHANGE_DIR
             )
             if dlgS.ShowModal() == wx.ID_OK:
                 ffpath = dlgS.GetPaths()[0]
