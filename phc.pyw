@@ -109,6 +109,9 @@ class MyApp(wx.App):
 
             # NPS controls
             self.lb_nps = xrc.XRCCTRL(self.frame, "lb_nps")
+            self.chb_nofon = xrc.XRCCTRL(self.frame, "checkbox_3")
+            self.rb_nps = xrc.XRCCTRL(self.frame, "radio_btn_1")
+            self.rb_ph = xrc.XRCCTRL(self.frame, "radio_btn_2")
 
             self.lb_nps.SetString(0, "NPS-0=3-4")
             self.lb_nps.SetString(1, "NPS-1=5-6")
@@ -213,15 +216,25 @@ class MyApp(wx.App):
         #     self.btn_eph.Enable()
 
     def On_NSfon(self, evt):
-        self.lb_nps.SetString(0, "NPS-0=2-3")
-        self.lb_nps.SetString(1, "NPS-1=4-5")
-        self.lb_nps.SetString(2, "NPS-2=6-7")
-        self.lb_nps.SetString(3, "NPS-3=8-9")
-        self.lb_nps.SetString(4, "NPS-4=10-11")
-        self.lb_nps.SetString(5, "NPS-5=12-13")
-        self.lb_nps.SetString(6, "NPS-6=14-15")
-        self.lb_nps.SetString(7, "NPS-7=16-17")
-        self.lb_nps.SetString(8, "NPS-8=18-19")
+        if self.chb_nofon.GetValue():
+            self.lb_nps.SetString(0, "NPS-0=2-3")
+            self.lb_nps.SetString(1, "NPS-1=4-5")
+            self.lb_nps.SetString(2, "NPS-2=6-7")
+            self.lb_nps.SetString(3, "NPS-3=8-9")
+            self.lb_nps.SetString(4, "NPS-4=10-11")
+            self.lb_nps.SetString(5, "NPS-5=12-13")
+            self.lb_nps.SetString(6, "NPS-6=14-15")
+            self.lb_nps.SetString(7, "NPS-7=16-17")
+            self.lb_nps.SetString(8, "NPS-8=18-19")
+        else:
+            self.lb_nps.SetString(0, "NPS-0=3-4")
+            self.lb_nps.SetString(1, "NPS-1=5-6")
+            self.lb_nps.SetString(2, "NPS-2=7-8")
+            self.lb_nps.SetString(3, "NPS-3=9-10")
+            self.lb_nps.SetString(4, "NPS-4=11-12")
+            self.lb_nps.SetString(5, "NPS-5=13-14")
+            self.lb_nps.SetString(6, "NPS-6=15-16")
+            self.lb_nps.SetString(7, "NPS-7=17-18")
 
     def OnOpen(self, evt):
         self.list_box.Clear()
@@ -261,6 +274,22 @@ class MyApp(wx.App):
             self.StatusBar.SetStatusText(os.path.basename(path), 1)
         dlg.Destroy()
 
+    def OnAdd_ph_stars(self, evt):
+        wildcard = "TXT(*.txt)|*.txt;*.TXT"
+        dlg = wx.FileDialog(self.frame, message="Choose File", defaultDir=os.getcwd(),
+                            defaultFile='', wildcard=wildcard, style=wx.OPEN | wx.CHANGE_DIR)
+        if dlg.ShowModal() == wx.ID_OK:
+            paths = dlg.GetPaths()
+            for path in paths:
+                global glist
+                Star_list = rw.read(path)
+                cc = len(glist) - 1
+                for N in range(1, len(Star_list)):
+                    glist.append(Star_list[N])
+                    self.list_box.Append('Star_Gr#' + str(N + cc) + '-' + str(Star_list[N].c))
+            self.StatusBar.SetStatusText(os.path.basename(path), 1)
+        dlg.Destroy()
+
     def OnGraph(self, evt):
         plt.rcParams['figure.figsize'] = 12, 6
         if glist != []:
@@ -274,7 +303,7 @@ class MyApp(wx.App):
             Tt = []
             UTd = datetime.strptime(Data.replace(" ", "") + ' ' + UT, "%d.%m.%y %H:%M:%S")
             while j < glist[item].c:
-                Tt.append(UTd + timedelta(seconds=j*dt))
+                Tt.append(UTd + timedelta(seconds=j * dt))
                 j = j + 1
             # print(Tt)
             timeFmt = DateFormatter("%H:%M:%S")
@@ -311,145 +340,171 @@ class MyApp(wx.App):
     def OnNPS_graph(self, evt):
         plt.show()
 
-    def OnNPS_calc(self, evt):
+    def OnNPS_calc(self, evt):  # NPS and Phot Standart stars calculate system here
         # print self.rb.GetStringSelection()
         if readNPS() == 0:
-            Warn(self.frame, 'Can''t find NPS Catalog NPS.cat')
+            Warn(self.frame, "Can't find NPS Catalog NPS.cat")
+            return
+        if read_phot_cat() == 0:
+            Warn(self.frame, "Can't find Photom Catalog ph.cat")
             return
             # exit()
         if len(glist) == 0:
             Warn(self.frame, "Open some file first")
             return
-        self.lb_nps_res.Clear()
+        self.lb_nps_res.Clear()  # Clear output form
         Cb = float(self.tc_cb.GetValue())
         Cv = float(self.tc_cv.GetValue())
         Cr = float(self.tc_cr.GetValue())
+
         nps_list = self.lb_nps.GetItems()
-        NPS = range(11)
-        for nps in nps_list:
-            q = nps.split('=')
-            if len(q) > 1:
-                n = q[0].split('-')[1]
-                NPS[int(n)] = q[1].split('-')
-        # print NPS
-        star = []
-        # Ab = []
-        # Av = []
-        Zb, Zv = [], []
-        Mza = []
-        for i in range(0, 11):
-            if len(NPS[i]) > 1:
-                st = rw.star()
-                ind1 = int(NPS[i][0])  # signal
-                ind2 = int(NPS[i][1])  # fon
-                st.mB = mB[i]
-                st.mV = mV[i]
-                st.bmv = st.mB - st.mV
-                if self.rb.GetSelection() == 0:  # Graphical way
-                    st.RA = RA[i]
-                    st.DEC = DEC[i]
-                    st.UT = glist[ind1].Time
-                    st_date = glist[ind1].Date
-                    # print st.RA/15, st.DEC, st.UT
-                    station = ephem.Observer()
-                    station.lat = '48.5635505'
-                    station.long = '22.453751'
-                    station.elevation = 231.1325
-                    starr = ephem.FixedBody()
-                    starr._ra = ephem.hours('%s' % st.RA)
-                    starr._dec = ephem.degrees('%s' % st.DEC)
-                    day, month, year = st_date.split('.')
-                    y = int(year)
-                    if y > 50:
-                        y = y + 1900
-                    else:
-                        y = y + 2000
-                    station.date = '%i/%s/%s %s' % (y, month.strip(), day.strip(), st.UT)
-                    starr.compute(station)
-                    # print m.degrees(starr.alt)
-                    st.Mz = 1 / m.cos(m.radians(90 - m.degrees(starr.alt)))
 
-                st.B = np.array(glist[ind1].B)
-                st.V = np.array(glist[ind1].V)
+        if self.rb_nps.GetValue():  #GetSelection():
+            print "Calc system from NPS stars..."
+            NPS = range(11)
+            for nps in nps_list:
+                q = nps.split('=')
+                if len(q) > 1:
+                    n = q[0].split('-')[1]  # NPS number
+                    NPS[int(n)] = q[1].split('-')
+            print NPS
+            star = []
+            # Ab = []
+            # Av = []
+            Zb, Zv = [], []
+            Mza = []
+            for i in range(0, 11):
+                if len(NPS[i]) > 1:
+                    st = rw.star()
+                    ind1 = int(NPS[i][0])  # signal
+                    ind2 = int(NPS[i][1])  # fon
+                    st.mB = mB[i]
+                    st.mV = mV[i]
+                    st.bmv = st.mB - st.mV
+                    if self.rb.GetSelection() == 0:  # Graphical way
+                        st.RA = RA[i]
+                        st.DEC = DEC[i]
+                        st.UT = glist[ind1].Time
+                        st_date = glist[ind1].Date
+                        # print st.RA/15, st.DEC, st.UT
+                        station = ephem.Observer()
+                        station.lat = '48.5635505'
+                        station.long = '22.453751'
+                        station.elevation = 231.1325
+                        starr = ephem.FixedBody()
+                        starr._ra = ephem.hours('%s' % st.RA)
+                        starr._dec = ephem.degrees('%s' % st.DEC)
+                        day, month, year = st_date.split('.')
+                        y = int(year)
+                        if y > 50:
+                            y = y + 1900
+                        else:
+                            y = y + 2000
+                        station.date = '%i/%s/%s %s' % (y, month.strip(), day.strip(), st.UT)
+                        starr.compute(station)
+                        # print m.degrees(starr.alt)
+                        st.Mz = 1 / m.cos(m.radians(90 - m.degrees(starr.alt)))
 
-                fonB = np.array(glist[ind2].B)
-                st.ImpB = st.B.mean(axis=0) - fonB.mean(axis=0)
-                st.RMSb = st.B.std(axis=0)
+                    st.B = np.array(glist[ind1].B)
+                    st.V = np.array(glist[ind1].V)
 
-                fonV = np.array(glist[ind2].V)
-                st.ImpV = st.V.mean(axis=0) - fonV.mean(axis=0)
-                st.RMSv = st.V.std(axis=0)
-                # print i, st.ImpV, st.RMSv
+                    fonB = np.array(glist[ind2].B)
+                    st.ImpB = st.B.mean(axis=0) - fonB.mean(axis=0)
+                    st.RMSb = st.B.std(axis=0)
 
-                if st.ImpB > 0:
-                    Zb.append(st.mB - Cb * (st.bmv) + 2.5 * m.log10(st.ImpB))
-                if st.ImpV > 0:
-                    Zv.append(st.mV - Cv * (st.bmv) + 2.5 * m.log10(st.ImpV))
-                Mza.append(st.Mz)
-                star.append(st)
-        global Abs
-        global Avs
-        Mzab = copy(Mza)
+                    fonV = np.array(glist[ind2].V)
+                    st.ImpV = st.V.mean(axis=0) - fonV.mean(axis=0)
+                    st.RMSv = st.V.std(axis=0)
+                    # print i, st.ImpV, st.RMSv
 
-        if self.rb.GetSelection() == 0:  # Graphical way
-            if len(Zv) > 0:
-                print 'Zv=', Zv
-                print 'Mza', Mza
-                kv, Avs, res_max, ind = pu.lsqFit(Zv, Mza)
-                while res_max > 0.1:
-                    print "Residual", res_max
-                    print 'delete V', ind
-                    Zv = np.delete(Zv, ind)
-                    Mza = np.delete(Mza, ind)
+                    if st.ImpB > 0:
+                        Zb.append(st.mB - Cb * (st.bmv) + 2.5 * m.log10(st.ImpB))
+                    if st.ImpV > 0:
+                        Zv.append(st.mV - Cv * (st.bmv) + 2.5 * m.log10(st.ImpV))
+                    Mza.append(st.Mz)
+                    star.append(st)
+            global Abs
+            global Avs
+            Mzab = copy(Mza)
+
+            if self.rb.GetSelection() == 0:  # Graphical way
+                if len(Zv) > 0:
+                    print 'Zv=', Zv
+                    print 'Mza', Mza
                     kv, Avs, res_max, ind = pu.lsqFit(Zv, Mza)
-                self.lb_nps_res.Append('Av=%2.4f' % Avs)
-                self.lb_nps_res.Append('Av_Residual=%2.4f' % res_max)
-                self.lb_nps_res.Append('Kv=%2.4f' % abs(kv))
-                # y=kx+A
-                plt.plot(Mza, Zv, 'go')
-                m_min = np.min(Mza)
-                m_max = np.max(Mza)
-                plt.plot([m_min, m_max], [kv * m_min + Avs, kv * m_max + Avs], 'g')
-                plt.xlabel('Mz')
-                plt.ylabel('m_st - Cv*(B-V) - m_inst')
+                    while res_max > 0.1:
+                        print "Residual", res_max
+                        print 'delete V', ind
+                        Zv = np.delete(Zv, ind)
+                        Mza = np.delete(Mza, ind)
+                        kv, Avs, res_max, ind = pu.lsqFit(Zv, Mza)
+                    self.lb_nps_res.Append('Av=%2.4f' % Avs)
+                    self.lb_nps_res.Append('Av_Residual=%2.4f' % res_max)
+                    self.lb_nps_res.Append('Kv=%2.4f' % abs(kv))
+                    # y=kx+A
+                    plt.plot(Mza, Zv, 'go')
+                    m_min = np.min(Mza)
+                    m_max = np.max(Mza)
+                    plt.plot([m_min, m_max], [kv * m_min + Avs, kv * m_max + Avs], 'g')
+                    plt.xlabel('Mz')
+                    plt.ylabel('m_st - Cv*(B-V) + m_inst')
 
-            if len(Zb) > 0:
-                kb, Abs, res, inddd = pu.lsqFit(Zb, Mzab)
-                while res > 0.1:
-                    X = 0
-                    for j in range(0, len(Zb)):
-                        dz = abs(Zb[j] - (kb * Mzab[j] + Abs))
-                        if dz > 0.1 and dz > X:
-                            i = j
-                            X = dz
-                    Zb = np.delete(Zb, i)
-                    print 'delete B', i
-                    Mzab = np.delete(Mzab, i)
+                if len(Zb) > 0:
                     kb, Abs, res, inddd = pu.lsqFit(Zb, Mzab)
-                self.lb_nps_res.Append('Ab=%2.4f' % Abs)
-                self.lb_nps_res.Append('Ab_Residual=%2.4f' % res)
-                self.lb_nps_res.Append('Kb=%2.4f' % abs(kb))
-                plt.plot(Mzab, Zb, 'bo')
-                m_min = np.min(Mzab)
-                m_max = np.max(Mzab)
-                plt.plot([m_min, m_max], [kb * m_min + Abs, kb * m_max + Abs], 'b')
+                    while res > 0.1:
+                        X = 0
+                        for j in range(0, len(Zb)):
+                            dz = abs(Zb[j] - (kb * Mzab[j] + Abs))
+                            if dz > 0.1 and dz > X:
+                                i = j
+                                X = dz
+                        Zb = np.delete(Zb, i)
+                        print 'delete B', inddd
+                        Mzab = np.delete(Mzab, i)
+                        kb, Abs, res, inddd = pu.lsqFit(Zb, Mzab)
+                    self.lb_nps_res.Append('Ab=%2.4f' % Abs)
+                    self.lb_nps_res.Append('Ab_Residual=%2.4f' % res)
+                    self.lb_nps_res.Append('Kb=%2.4f' % abs(kb))
+                    plt.plot(Mzab, Zb, 'bo')
+                    m_min = np.min(Mzab)
+                    m_max = np.max(Mzab)
+                    plt.plot([m_min, m_max], [kb * m_min + Abs, kb * m_max + Abs], 'b')
 
-            if (len(Zv) < 1 and Avs != 0) or (len(Zb) < 1 and Abs != 0):
-                wx.MessageBox('You are doing something wrong - No Ab (or Av) coefficient calculated', 'Warning!!!', 1)
+                if (len(Zv) < 1 and Avs != 0) or (len(Zb) < 1 and Abs != 0):
+                    wx.MessageBox('You are doing something wrong - No Ab (or Av) coefficient calculated', 'Warning!!!', 1)
 
-        if self.rb.GetSelection() == 1:  # Standard way
-            if len(Zv) > 0:
-                Zv = pu.RMS_del(Zv, 0.1)
-                Avs = np.mean(Zv)
-                res = np.std(Zv)
-                self.lb_nps_res.Append('Av=%2.4f' % Avs)
-                self.lb_nps_res.Append('Av_StdDev=%2.4f' % res)
-            if len(Zb) > 0:
-                Zb = pu.RMS_del(Zb, 0.1)
-                Abs = np.mean(Zb)
-                res = np.std(Zb)
-                self.lb_nps_res.Append('Ab=%2.4f' % Abs)
-                self.lb_nps_res.Append('Ab_StdDev=%2.4f' % res)
+            else:                     # Standard way
+                if len(Zv) > 0:
+                    Zv = pu.RMS_del(Zv, 0.1)
+                    Avs = np.mean(Zv)
+                    res = np.std(Zv)
+                    self.lb_nps_res.Append('Av=%2.4f' % Avs)
+                    self.lb_nps_res.Append('Av_StdDev=%2.4f' % res)
+                if len(Zb) > 0:
+                    Zb = pu.RMS_del(Zb, 0.1)
+                    Abs = np.mean(Zb)
+                    res = np.std(Zb)
+                    self.lb_nps_res.Append('Ab=%2.4f' % Abs)
+                    self.lb_nps_res.Append('Ab_StdDev=%2.4f' % res)
+
+        if self.rb_ph.GetValue():
+            print "Calc system from PHOT stars..."
+
+            if self.rb.GetSelection() == 1:  # Standard way
+                if len(Zv) > 0:
+                    Zv = pu.RMS_del(Zv, 0.1)
+                    Avs = np.mean(Zv)
+                    res = np.std(Zv)
+                    self.lb_nps_res.Append('Av=%2.4f' % Avs)
+                    self.lb_nps_res.Append('Av_StdDev=%2.4f' % res)
+                if len(Zb) > 0:
+                    Zb = pu.RMS_del(Zb, 0.1)
+                    Abs = np.mean(Zb)
+                    res = np.std(Zb)
+                    self.lb_nps_res.Append('Ab=%2.4f' % Abs)
+                    self.lb_nps_res.Append('Ab_StdDev=%2.4f' % res)
+            else:  # Graphical way
+                print "Graphical way for PHOT stars is not implemented yet!"
 
     def OnEph(self, evt):
         global tle
@@ -505,16 +560,17 @@ class MyApp(wx.App):
                 name = TLE_list[i][0]
                 if cosp == COSPAR:
                     c = l2[2]
-                    no = l2[1]
+                    no = l2[1][:-1]
                     n = TLE_list[i][0]
                     tle = TLE_list[i]
             if tle == []:
                 for i in range(0, len(TLE_list)):
                     l2 = TLE_list[i][1].split()
-                    nor = l2[1]
+                    nor = l2[1][:-1]
+                    # print 'nor=', nor
                     if nor == NORAD:
                         c = l2[2]
-                        no = l2[1]
+                        no = l2[1][:-1]
                         n = TLE_list[i][0]
                         tle = TLE_list[i]
             if tle == []:
@@ -523,7 +579,7 @@ class MyApp(wx.App):
                     name = TLE_list[i][0]
                     if name == NAME:
                         c = l2[2]
-                        no = l2[1]
+                        no = l2[1][:-1]
                         n = TLE_list[i][0]
                         tle = TLE_list[i]
             if len(tle) > 0 :
@@ -550,7 +606,7 @@ class MyApp(wx.App):
                     station.date = ephem.Date(station.date + dt / 3600 / 24)
                     # print station.date, sat.alt, sat.range
                     j = j + 1
-                no = no[:-1]  # no U
+                # no = no[:-1]  # no U
                 return el, rg, n, no, c, tle
             else:
                 return Warn(self.frame, 'Cant find TLE for such satellite!')
@@ -636,6 +692,7 @@ class MyApp(wx.App):
                 self.tc_name.SetValue(name)
                 COSPAR = cosp
                 NORAD = nor
+                # print NORAD # !!!!
                 NAME = name
             for i in range(SAT.c):
                 # print i ##m.radians
@@ -647,9 +704,9 @@ class MyApp(wx.App):
                 mzv = Kv * mz
                 mr = -5 * m.log10(Rg[i] / 1000.0)
                 if SAT.B[i] != MAX_M:
-                    SAT.B[i] = SAT.B[i] - mzb + mr  # + or-  Mz ???
+                    SAT.B[i] = SAT.B[i] + mzb + mr  # + or-  Mz ???
                 if SAT.V[i] != MAX_M:
-                    SAT.V[i] = SAT.V[i] - mzv + mr
+                    SAT.V[i] = SAT.V[i] + mzv + mr
         # Graphic!!!
         if len(SAT.B) > 0:
             SAT.B = np.array(SAT.B)
@@ -879,4 +936,5 @@ class MyApp(wx.App):
 
 if __name__ == "__main__":
     app = MyApp(False)
+    print "Starting Application..."
     app.MainLoop()
