@@ -360,7 +360,7 @@ class MyApp(wx.App):
 
         nps_list = self.lb_nps.GetItems()
 
-        if self.rb_nps.GetSelection():
+        if self.rb_nps.GetValue():  #GetSelection():
             print "Calc system from NPS stars..."
             NPS = range(11)
             for nps in nps_list:
@@ -460,7 +460,7 @@ class MyApp(wx.App):
                                 i = j
                                 X = dz
                         Zb = np.delete(Zb, i)
-                        print 'delete B', i
+                        print 'delete B', inddd
                         Mzab = np.delete(Mzab, i)
                         kb, Abs, res, inddd = pu.lsqFit(Zb, Mzab)
                     self.lb_nps_res.Append('Ab=%2.4f' % Abs)
@@ -488,7 +488,7 @@ class MyApp(wx.App):
                     self.lb_nps_res.Append('Ab=%2.4f' % Abs)
                     self.lb_nps_res.Append('Ab_StdDev=%2.4f' % res)
 
-        if self.rb_ph.GetSelection():
+        if self.rb_ph.GetValue():
             print "Calc system from PHOT stars..."
 
             if self.rb.GetSelection() == 1:  # Standard way
@@ -561,16 +561,17 @@ class MyApp(wx.App):
                 name = TLE_list[i][0]
                 if cosp == COSPAR:
                     c = l2[2]
-                    no = l2[1]
+                    no = l2[1][:-1]
                     n = TLE_list[i][0]
                     tle = TLE_list[i]
             if tle == []:
                 for i in range(0, len(TLE_list)):
                     l2 = TLE_list[i][1].split()
-                    nor = l2[1]
+                    nor = l2[1][:-1]
+                    # print 'nor=', nor
                     if nor == NORAD:
                         c = l2[2]
-                        no = l2[1]
+                        no = l2[1][:-1]
                         n = TLE_list[i][0]
                         tle = TLE_list[i]
             if tle == []:
@@ -579,7 +580,7 @@ class MyApp(wx.App):
                     name = TLE_list[i][0]
                     if name == NAME:
                         c = l2[2]
-                        no = l2[1]
+                        no = l2[1][:-1]
                         n = TLE_list[i][0]
                         tle = TLE_list[i]
             if len(tle) > 0 :
@@ -606,7 +607,7 @@ class MyApp(wx.App):
                     station.date = ephem.Date(station.date + dt / 3600 / 24)
                     # print station.date, sat.alt, sat.range
                     j = j + 1
-                no = no[:-1]  # no U
+                # no = no[:-1]  # no U
                 return el, rg, n, no, c, tle
             else:
                 return Warn(self.frame, 'Cant find TLE for such satellite!')
@@ -692,6 +693,7 @@ class MyApp(wx.App):
                 self.tc_name.SetValue(name)
                 COSPAR = cosp
                 NORAD = nor
+                # print NORAD # !!!!
                 NAME = name
             for i in range(SAT.c):
                 # print i ##m.radians
@@ -703,9 +705,9 @@ class MyApp(wx.App):
                 mzv = Kv * mz
                 mr = -5 * m.log10(Rg[i] / 1000.0)
                 if SAT.B[i] != MAX_M:
-                    SAT.B[i] = SAT.B[i] - mzb + mr  # + or-  Mz ???
+                    SAT.B[i] = SAT.B[i] + mzb + mr  # + or-  Mz ???
                 if SAT.V[i] != MAX_M:
-                    SAT.V[i] = SAT.V[i] - mzv + mr
+                    SAT.V[i] = SAT.V[i] + mzv + mr
         # Graphic!!!
         if len(SAT.B) > 0:
             SAT.B = np.array(SAT.B)
