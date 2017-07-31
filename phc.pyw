@@ -327,7 +327,9 @@ class MyApp(wx.App):
             plt.show()
 
     def OnQuit(self, evt):
-        self.Exit()
+        # self.Exit()
+        # self.Close()
+        self.Destroy()
 
     def OnListDk(self, evt):
         selected = self.lb_nps.GetSelection()
