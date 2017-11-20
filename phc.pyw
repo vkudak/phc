@@ -159,7 +159,8 @@ class MyApp(wx.App):
             self.tc_cospar = xrc.XRCCTRL(self.frame, "text_ctrl_6")
             self.tc_norad = xrc.XRCCTRL(self.frame, "text_ctrl_7")
             self.tc_name = xrc.XRCCTRL(self.frame, "text_ctrl_8")
-            self.cb_intr = xrc.XRCCTRL(self.frame, "combo_box_1")
+            # self.cb_intr = xrc.XRCCTRL(self.frame, "combo_box_1")
+            self.tel_name = xrc.XRCCTRL(self.frame, "combo_box_1")
             self.btn_eph = xrc.XRCCTRL(self.frame, "button_2")
             # self.btn_phc=xrc.XRCCTRL(self.frame,"btn_phot_calc")
 
@@ -637,7 +638,10 @@ class MyApp(wx.App):
 
     def OnStand(self, evt):
         global glist
-        MAX_M = 15
+        if self.tel_name.GetSelection() == 1:  # AFU-75
+            MAX_M = 10
+        else:  # TPL
+            MAX_M = 13
         MAX_N = 65535
         Kb = float(self.tc_kb.GetValue())
         Kv = float(self.tc_kv.GetValue())
