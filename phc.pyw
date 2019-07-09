@@ -314,10 +314,10 @@ class MyApp(wx.App):
             locale.setlocale(locale.LC_NUMERIC, 'C')  # for graph
             if np.mean(glist[item].B) != 65535:
                 # plt.plot(range(glist[item].c), glist[item].B, 'b-')
-                plt.plot(Tt, glist[item].B, 'b-')
+                plt.plot(Tt, glist[item].B, 'b.-')
             if np.mean(glist[item].V) != 65535:
                 # plt.plot(range(glist[item].c), glist[item].V, 'g-')
-                plt.plot(Tt, glist[item].V, 'g-')
+                plt.plot(Tt, glist[item].V, 'g.--')
             ax = plt.gca()
             ax.xaxis.set_major_formatter(timeFmt)
             Mean_B = np.mean(glist[item].B)
@@ -776,9 +776,9 @@ class MyApp(wx.App):
         locale.setlocale(locale.LC_NUMERIC, 'C')  # for graph
 
         if np.mean(SAT.B) not in [MAX_M, MAX_N]:  # 65535:
-            plt.plot(Tt, SAT.B, 'b-', label="B")
+            plt.plot(Tt, SAT.B, 'b.-', label="B")
         if np.mean(SAT.V) not in [MAX_M, MAX_N]:  # 65535:
-            plt.plot(Tt, SAT.V, 'g-', label="V")
+            plt.plot(Tt, SAT.V, 'g.--', label="V")
         ax = plt.gca()
         ax.xaxis.set_major_formatter(timeFmt)
         ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
