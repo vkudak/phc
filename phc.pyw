@@ -662,6 +662,13 @@ class MyApp(wx.App):
                 FON_B = copy(glist[fn].B)
                 FON_V = copy(glist[fn].V)
                 count = copy(glist[fn].c)
+
+                from scipy.signal import medfilt
+                # FON_B = medfilt(FON_B, kernel_size=5)
+                FON_B = medfilt(FON_B)
+                # FON_V = medfilt(FON_V, kernel_size=5)
+                FON_V = medfilt(FON_V)
+
                 ###B
                 FON_B2 = pu.interp(FON_B, count, SAT.c)  # - 1
                 FON_B2 = np.array(FON_B2)
@@ -681,13 +688,24 @@ class MyApp(wx.App):
                 plt.title('Cubic-spline interpolation')
                 plt.show()'''
                 #
-                FON_B2 = pu.RMS_mean(FON_B2, MAX_M)
-                FON_V2 = pu.RMS_mean(FON_V2, MAX_M)
+                # FON_B2 = pu.RMS_mean(FON_B2, MAX_M)
+                # FON_V2 = pu.RMS_mean(FON_V2, MAX_M)
                 SAT.B = SAT.B - FON_B2
                 SAT.V = SAT.V - FON_V2
         else:  # No FON
             sn = self.sc_sat_gr.GetValue()
             SAT = copy(glist[sn])
+
+        global S_Imp_B, S_Imp_V
+        S_Imp_B = copy(SAT.B)
+        S_Imp_V = copy(SAT.V)
+
+        global s_fon_B, s_fon_V
+        # if len(FON_B2) > 0:
+        if isinstance(FON_B2,np.ndarray):
+            s_fon_B = FON_B2
+            s_fon_V = FON_V2
+
         # Standardization
         global Abs
         global Avs
@@ -783,6 +801,7 @@ class MyApp(wx.App):
         ax.xaxis.set_major_formatter(timeFmt)
         ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
         plt.title("Satellite=%s \n Date=%s  UT=%s   dt=%s" % (NAME, SAT.Date.strip(), SAT.Time, str(SAT.dt)))
+        plt.savefig("tmp_last_fig.png")
         plt.show()
 
         if NORAD == '':
@@ -944,19 +963,28 @@ class MyApp(wx.App):
                         f.write("NO magnitudes... only instrument count is given!!! \n")
 
                     if not self.chb_inst.GetValue():
-                        f.write('  UT TIME            mB      mV      El(deg) Rg(Mm) \n')
+                        # f.write('  UT TIME            mB      mV      El(deg) Rg(Mm) \n')
+                        f.write('  UT TIME              ImpB        ImpV           FonB       FonV         mB      mV      El(deg) Rg(Mm)\n')
                     else:
                         f.write('  UT TIME           N_B     N_V      El(deg) Rg(Mm) \n')
                     for i in range(SAT.c):
                         tt = i * SAT.dt
                         T = T0 + timedelta(seconds=tt)
                         f.write(T.strftime('%H:%M:%S.%f'))
+
+                        f.write(str("  %12.3f" % S_Imp_B[i]))
+                        f.write(str("%12.3f" % S_Imp_V[i]))
+
+                        f.write(str("  %12.3f" % s_fon_B[i]))
+                        f.write(str("%12.3f" % s_fon_V[i]))
+
                         f.write(str("  %8.3f" % SAT.B[i]))
                         f.write(str("%8.3f" % SAT.V[i]))
                         if (not self.chb_mo.GetValue()) and (not self.chb_inst.GetValue()):
                             f.write("    %5.3f  %5.3f \n" % (El[i], Rg[i]))
                         else:
                             f.write('\n')
+
                     f.close()
             dlgS.Destroy()
         dlg.Destroy()
