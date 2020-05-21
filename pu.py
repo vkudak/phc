@@ -7,7 +7,7 @@ from scipy import interpolate
 
 
 def interp(A, an, bn):
-    tck = interpolate.splrep(range(an), A, s=0)
+    tck = interpolate.splrep(range(an), A, s=0)  # s=0.2 ???
     #d = 0.0
     d = float(an) / float(bn)
     #print an

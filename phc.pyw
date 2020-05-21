@@ -10,6 +10,7 @@ import wx.xrc as xrc
 import matplotlib.pyplot as plt
 from matplotlib.dates import DateFormatter
 import os
+import shutil
 import locale
 import ephem
 import rw  # additional units
@@ -32,6 +33,8 @@ El, Rg = [], []
 tle = False
 TLE_list = []
 self_path = ''  # global path to pch.pyw
+figsize = 12, 6
+default_tel = 1  # 0- TPL; 1-AFU;
 
 
 def mjd(utc_time):
@@ -161,6 +164,7 @@ class MyApp(wx.App):
             self.tc_name = xrc.XRCCTRL(self.frame, "text_ctrl_8")
             # self.cb_intr = xrc.XRCCTRL(self.frame, "combo_box_1")
             self.tel_name = xrc.XRCCTRL(self.frame, "combo_box_1")
+            self.tel_name.SetSelection(default_tel)
             self.btn_eph = xrc.XRCCTRL(self.frame, "button_2")
             # self.btn_phc=xrc.XRCCTRL(self.frame,"btn_phot_calc")
 
@@ -295,7 +299,7 @@ class MyApp(wx.App):
         dlg.Destroy()
 
     def OnGraph(self, evt):
-        plt.rcParams['figure.figsize'] = 12, 6
+        plt.rcParams['figure.figsize'] = figsize
         if glist != []:
             item = self.list_box.GetSelection() + 1
             # plt.figure('Group #' + str(item))
@@ -778,7 +782,7 @@ class MyApp(wx.App):
             Tt.append(UTd+timedelta(seconds=jj*SAT.dt))
             jj = jj + 1
         # ##########################################################################
-        plt.rcParams['figure.figsize'] = 12, 6
+        plt.rcParams['figure.figsize'] = figsize
         Tmin = min(Tt)
         Tmax = max(Tt)
         if np.mean(SAT.B) == MAX_M:
@@ -985,9 +989,12 @@ class MyApp(wx.App):
                         else:
                             f.write('\n')
 
+                        scr_pth = os.path.dirname(os.path.realpath(__file__))
+                        shutil.copyfile(scr_pth+"\\tmp_last_fig.png", NORAD + ".png")
                     f.close()
             dlgS.Destroy()
         dlg.Destroy()
+        os.remove(scr_pth+"\\tmp_last_fig.png")
 
 
 if __name__ == "__main__":
