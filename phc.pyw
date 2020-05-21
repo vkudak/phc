@@ -33,8 +33,10 @@ El, Rg = [], []
 tle = False
 TLE_list = []
 self_path = ''  # global path to pch.pyw
-figsize = 12, 6
+figsize = 9, 6
 default_tel = 1  # 0- TPL; 1-AFU;
+scr_pth = os.path.dirname(os.path.realpath(__file__))
+print "path="+ scr_pth
 
 
 def mjd(utc_time):
@@ -269,7 +271,7 @@ class MyApp(wx.App):
     def OnAddNPS(self, evt):
         wildcard = "TXT(*.txt)|*.txt;*.TXT"
         dlg = wx.FileDialog(self.frame, message="Choose File", defaultDir=os.getcwd(),
-                            defaultFile='', wildcard=wildcard, style=wx.OPEN | wx.CHANGE_DIR)
+                            defaultFile='', wildcard=wildcard, style=wx.FD_OPEN | wx.FD_CHANGE_DIR)
         if dlg.ShowModal() == wx.ID_OK:
             paths = dlg.GetPaths()
             for path in paths:
@@ -810,7 +812,7 @@ class MyApp(wx.App):
         ax.xaxis.set_major_formatter(timeFmt)
         ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
         plt.title("Satellite=%s \n Date=%s  UT=%s   dt=%s" % (NAME, SAT.Date.strip(), SAT.Time, str(SAT.dt)))
-        plt.savefig("tmp_last_fig.png")
+        plt.savefig(scr_pth + "\\tmp_last_fig.png")
         plt.show()
 
         if NORAD == '':
@@ -994,12 +996,13 @@ class MyApp(wx.App):
                         else:
                             f.write('\n')
 
-                        scr_pth = os.path.dirname(os.path.realpath(__file__))
-                        shutil.copyfile(scr_pth+"\\tmp_last_fig.png", NORAD + ".png")
+                        # scr_pth = os.path.dirname(os.path.realpath(__file__))
+                        # print scr_pth
+                        shutil.copyfile(scr_pth + "\\tmp_last_fig.png", NORAD + ".png")
                     f.close()
             dlgS.Destroy()
         dlg.Destroy()
-        os.remove(scr_pth+"\\tmp_last_fig.png")
+        os.remove(scr_pth + "\\tmp_last_fig.png")
 
 
 if __name__ == "__main__":
