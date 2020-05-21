@@ -668,10 +668,15 @@ class MyApp(wx.App):
                 count = copy(glist[fn].c)
 
                 from scipy.signal import medfilt
+                from scipy import ndimage, misc
                 # FON_B = medfilt(FON_B, kernel_size=5)
                 FON_B = medfilt(FON_B)
+                # FON_B = ndimage.median_filter(FON_B, size=3)  # almost the same but faster
+                # FON_B = ndimage.minimum_filter(FON_B, size=5)
+
                 # FON_V = medfilt(FON_V, kernel_size=5)
                 FON_V = medfilt(FON_V)
+                # FON_V = ndimage.median_filter(FON_V, size=3)
 
                 ###B
                 FON_B2 = pu.interp(FON_B, count, SAT.c)  # - 1
