@@ -792,7 +792,7 @@ class MyApp(wx.App):
         plt.rcParams['figure.figsize'] = figsize
         Tmin = min(Tt)
         Tmax = max(Tt)
-        if np.mean(SAT.B) == MAX_M:
+        if np.mean(SAT.B) == MAX_M:  # correct axis limit
             minB = minV
             maxB = maxV
         if np.mean(SAT.V) == MAX_M:
@@ -800,8 +800,10 @@ class MyApp(wx.App):
             maxV = maxB
         if self.chb_inst.GetValue() is False:
             plt.axis([Tmin, Tmax, max(maxB, maxV), min(minB, minV)])
+            plt.ylabel('m_st')
         else:
             plt.axis([Tmin, Tmax, min(minB, minV), max(maxB, maxV)])
+            plt.ylabel('m_inst')
         locale.setlocale(locale.LC_NUMERIC, 'C')  # for graph
 
         if np.mean(SAT.B) not in [MAX_M, MAX_N]:  # 65535:
