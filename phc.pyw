@@ -33,7 +33,7 @@ El, Rg = [], []
 tle = False
 TLE_list = []
 self_path = ''  # global path to pch.pyw
-figsize = 9, 6
+figsize = 12, 6
 default_tel = 1  # 0- TPL; 1-AFU;
 scr_pth = os.path.dirname(os.path.realpath(__file__))
 print "path="+ scr_pth
@@ -833,12 +833,12 @@ class MyApp(wx.App):
             ''' SAVE RESULT'''
             # print "PATH=", os.getcwd() + '/' + NAME
             wildcard = "PHC(*.phc)|*.phc| UMOSS(*.umoss)|*.umoss| PH1(*.ph1)|*.ph1"
-            if not os.path.exists(os.getcwd() + '/' + NAME):
-                os.makedirs(os.getcwd() + '/' + NAME)
+            if not os.path.exists(os.getcwd() + '/' + NAME + "_" + UTd.strftime("%y%m%d_%H%M")):
+                os.makedirs(os.getcwd() + '/' + NAME+ "_" + UTd.strftime("%y%m%d_%H%M"))
             dlgS = wx.FileDialog(
                 self.frame, message="Save File in different formats",
-                defaultDir=os.getcwd() + '/' + NAME,
-                defaultFile=NAME + '.phc',
+                defaultDir=os.getcwd() + '/' + NAME + "_" + UTd.strftime("%y%m%d_%H%M"),
+                defaultFile=NAME + "_" + UTd.strftime("%y%m%d_%H%M") + '.phc',
                 wildcard=wildcard,
                 style=wx.FD_SAVE | wx.FD_CHANGE_DIR
             )
@@ -997,8 +997,10 @@ class MyApp(wx.App):
                             f.write('\n')
 
                         # scr_pth = os.path.dirname(os.path.realpath(__file__))
+                        # shutil.copyfile(scr_pth+"\\tmp_last_fig.png", NORAD + "_" + T0.strftime("%y%m%d_%H%M") + ".png")
+                        # scr_pth = os.path.dirname(os.path.realpath(__file__))
                         # print scr_pth
-                        shutil.copyfile(scr_pth + "\\tmp_last_fig.png", NORAD + ".png")
+                        shutil.copyfile(scr_pth + "\\tmp_last_fig.png", NORAD + "_" + T0.strftime("%y%m%d_%H%M") + ".png")
                     f.close()
             dlgS.Destroy()
         dlg.Destroy()
