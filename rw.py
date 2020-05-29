@@ -54,7 +54,9 @@ def read(path):
     dt = f.readline()
     dt = dt.split(' ')
     #print dt
-    f.readline()
+    # f.readline()
+    culm_time = f.readline()
+    culm_time = culm_time.strip()
     f.readline()
     f.readline()  # pass
     f.readline()
@@ -87,7 +89,7 @@ def read(path):
             grList[N].V.append(int(l[1]))
     f.close()
     grList.pop()
-    return grList
+    return grList, culm_time
 
 
 def test():

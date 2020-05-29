@@ -36,6 +36,7 @@ self_path = ''  # global path to pch.pyw
 figsize = 12, 6
 default_tel = 1  # 0- TPL; 1-AFU;
 scr_pth = os.path.dirname(os.path.realpath(__file__))
+culm_time = ""
 print "path="+ scr_pth
 
 
@@ -116,6 +117,7 @@ class MyApp(wx.App):
             self.lb_nps = xrc.XRCCTRL(self.frame, "lb_nps")
             self.chb_nofon = xrc.XRCCTRL(self.frame, "checkbox_3")
             self.rb_nps = xrc.XRCCTRL(self.frame, "radio_btn_1")
+            self.rb_nps.SetValue(True)
             self.rb_ph = xrc.XRCCTRL(self.frame, "radio_btn_2")
 
             self.lb_nps.SetString(0, "NPS-0=3-4")
@@ -129,6 +131,8 @@ class MyApp(wx.App):
             # self.lb_nps.SetString(8, "NPS-8=19-20")
             # self.lb_nps.SetString(9, "NPS-9=21-22")
             # self.lb_nps.SetString(10, "NPS-10=23-24")
+
+            self.sc_add_npsi = xrc.XRCCTRL(self.frame, "spin_ctr_3")
 
             self.lb_nps_res = xrc.XRCCTRL(self.frame, "lb_nps_res")
             self.tc_cb = xrc.XRCCTRL(self.frame, "tc_cb")
@@ -169,6 +173,7 @@ class MyApp(wx.App):
             self.tel_name.SetSelection(default_tel)
             self.btn_eph = xrc.XRCCTRL(self.frame, "button_2")
             # self.btn_phc=xrc.XRCCTRL(self.frame,"btn_phot_calc")
+            self.chb_add_culm = xrc.XRCCTRL(self.frame, "checkbox_4")
 
             # Binds
             self.frame.Bind(wx.EVT_MENU, self.OnOpen, id=xrc.XRCID('Open'))
@@ -186,6 +191,8 @@ class MyApp(wx.App):
             self.Bind(wx.EVT_BUTTON, self.OnEph, id=xrc.XRCID("button_2"))
             self.Bind(wx.EVT_KEY_DOWN, self.OnKeyLb, id=xrc.XRCID('lb_nps'))
             # self.Bind(wx.EVT_CHAR, self.OnKeyFrame)
+
+            self.frame.Bind(wx.EVT_SPINCTRL, self.NPS_change, id=xrc.XRCID('spin_ctrl_3'))
             ######
 
             self.frame.Size = (500, 500)
@@ -196,6 +203,19 @@ class MyApp(wx.App):
         else:
             print "File phc.xrc don't find"
         return True
+
+    def NPS_change(self, evt):
+        # write !!!
+        # self.lb_nps.SetString(0, "NPS-0=3-4")
+        # self.lb_nps.SetString(1, "NPS-1=5-6")
+        # self.lb_nps.SetString(2, "NPS-2=7-8")
+        # self.lb_nps.SetString(3, "NPS-3=9-10")
+        # self.lb_nps.SetString(4, "NPS-4=11-12")
+        # self.lb_nps.SetString(5, "NPS-5=13-14")
+        # self.lb_nps.SetString(6, "NPS-6=15-16")
+        # self.lb_nps.SetString(7, "NPS-7=17-18")
+
+        print "i=i+1"
 
     def OnKeyLb(self, evt):
         x = evt.GetKeyCode()
@@ -258,8 +278,9 @@ class MyApp(wx.App):
             paths = dlg.GetPaths()
             for path in paths:
                 global glist
+                global culm_time
                 try:
-                    glist = rw.read(path)
+                    glist, culm_time = rw.read(path)
                     for N in range(1, len(glist)):
                         self.list_box.Append('Gr#' + str(N) + '-' + str(glist[N].c))
                 except Exception as E:
@@ -267,6 +288,7 @@ class MyApp(wx.App):
                     print E.args
             self.StatusBar.SetStatusText('FileName=' + os.path.basename(path), 0)
         dlg.Destroy()
+        # print culm_time
 
     def OnAddNPS(self, evt):
         wildcard = "TXT(*.txt)|*.txt;*.TXT"
@@ -374,6 +396,7 @@ class MyApp(wx.App):
         Kv = float(self.tc_kv.GetValue())
 
         nps_list = self.lb_nps.GetItems()
+        print "here"
 
         if self.rb_nps.GetValue():
             print "Calc system from NPS stars..."
@@ -813,7 +836,11 @@ class MyApp(wx.App):
         ax = plt.gca()
         ax.xaxis.set_major_formatter(timeFmt)
         ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
-        plt.title("Satellite=%s \n Date=%s  UT=%s   dt=%s" % (NAME, SAT.Date.strip(), SAT.Time, str(SAT.dt)))
+        if not self.chb_add_culm.GetValue():
+            c_time = ""
+        else:
+            c_time = culm_time
+        plt.title("Satellite Name:%s, NORAD:%s, COSPAR:%s \n Date=%s  UT=%s   dt=%s    %s" % (NAME, NORAD, COSPAR, SAT.Date.strip(), SAT.Time, str(SAT.dt), c_time))
         plt.savefig(scr_pth + "\\tmp_last_fig.png")
         plt.show()
 
@@ -835,12 +862,14 @@ class MyApp(wx.App):
             ''' SAVE RESULT'''
             # print "PATH=", os.getcwd() + '/' + NAME
             wildcard = "PHC(*.phc)|*.phc| UMOSS(*.umoss)|*.umoss| PH1(*.ph1)|*.ph1"
-            if not os.path.exists(os.getcwd() + '/' + NAME + "_" + UTd.strftime("%y%m%d_%H%M")):
-                os.makedirs(os.getcwd() + '/' + NAME+ "_" + UTd.strftime("%y%m%d_%H%M"))
+            # if not os.path.exists(os.getcwd() + '/' + NAME + "_" + UTd.strftime("%y%m%d_%H%M")):
+            #     os.makedirs(os.getcwd() + '/' + NAME+ "_" + UTd.strftime("%y%m%d_%H%M"))
+            if not os.path.exists(scr_pth + '\\RESULTS\\' + NORAD):
+                os.makedirs(scr_pth + '\\RESULTS\\' + NORAD)
             dlgS = wx.FileDialog(
                 self.frame, message="Save File in different formats",
-                defaultDir=os.getcwd() + '/' + NAME + "_" + UTd.strftime("%y%m%d_%H%M"),
-                defaultFile=NAME + "_" + UTd.strftime("%y%m%d_%H%M") + '.phc',
+                defaultDir=scr_pth + '\\RESULTS\\' + NORAD,
+                defaultFile=NORAD + "_" + UTd.strftime("%y%m%d_%H%M") + '.phc',
                 wildcard=wildcard,
                 style=wx.FD_SAVE | wx.FD_CHANGE_DIR
             )
@@ -1002,7 +1031,8 @@ class MyApp(wx.App):
                         # shutil.copyfile(scr_pth+"\\tmp_last_fig.png", NORAD + "_" + T0.strftime("%y%m%d_%H%M") + ".png")
                         # scr_pth = os.path.dirname(os.path.realpath(__file__))
                         # print scr_pth
-                        shutil.copyfile(scr_pth + "\\tmp_last_fig.png", NORAD + "_" + T0.strftime("%y%m%d_%H%M") + ".png")
+                        shutil.copyfile(scr_pth + "\\tmp_last_fig.png", scr_pth + "\\RESULTS\\" + NORAD + "\\" + NORAD+ "_" + T0.strftime("%y%m%d_%H%M") + ".png")
+                        # scr_pth + '\\RESULTS\\' + NORAD + "\\" + NORAD + "_" + UTd.strftime("%y%m%d_%H%M")
                     f.close()
             dlgS.Destroy()
         dlg.Destroy()
