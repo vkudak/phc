@@ -107,7 +107,7 @@ class MyApp(wx.App):
     def OnInit(self):
         if os.path.exists("phc.xrc"):
             self.res = xrc.XmlResource("phc.xrc")
-
+            # use wxGlade from github
             self.frame = self.res.LoadFrame(None, 'MyFrame')
             self.list_box = xrc.XRCCTRL(self.frame, "list_box_1")
             self.notebook = xrc.XRCCTRL(self.frame, "Notebook")
@@ -116,9 +116,9 @@ class MyApp(wx.App):
             # NPS controls
             self.lb_nps = xrc.XRCCTRL(self.frame, "lb_nps")
             self.chb_nofon = xrc.XRCCTRL(self.frame, "checkbox_3")
-            self.rb_nps = xrc.XRCCTRL(self.frame, "radio_btn_1")
-            self.rb_nps.SetValue(True)
-            self.rb_ph = xrc.XRCCTRL(self.frame, "radio_btn_2")
+            # self.rb_nps = xrc.XRCCTRL(self.frame, "radio_btn_1")
+            # self.rb_nps.SetValue(True)
+            # self.rb_ph = xrc.XRCCTRL(self.frame, "radio_btn_2")
 
             self.lb_nps.SetString(0, "NPS-0=3-4")
             self.lb_nps.SetString(1, "NPS-1=5-6")
@@ -132,7 +132,7 @@ class MyApp(wx.App):
             # self.lb_nps.SetString(9, "NPS-9=21-22")
             # self.lb_nps.SetString(10, "NPS-10=23-24")
 
-            self.sc_add_npsi = xrc.XRCCTRL(self.frame, "spin_ctr_3")
+            self.sc_add_npsi = xrc.XRCCTRL(self.frame, "spin_ctrl_3")
 
             self.lb_nps_res = xrc.XRCCTRL(self.frame, "lb_nps_res")
             self.tc_cb = xrc.XRCCTRL(self.frame, "tc_cb")
@@ -205,7 +205,6 @@ class MyApp(wx.App):
         return True
 
     def NPS_change(self, evt):
-        # write !!!
         # self.lb_nps.SetString(0, "NPS-0=3-4")
         # self.lb_nps.SetString(1, "NPS-1=5-6")
         # self.lb_nps.SetString(2, "NPS-2=7-8")
@@ -214,8 +213,24 @@ class MyApp(wx.App):
         # self.lb_nps.SetString(5, "NPS-5=13-14")
         # self.lb_nps.SetString(6, "NPS-6=15-16")
         # self.lb_nps.SetString(7, "NPS-7=17-18")
-
-        print "i=i+1"
+        c = self.lb_nps.GetCount()
+        print c
+        nl = []
+        for i in range(0, c):
+            tmp = self.lb_nps.GetString(i).split("=")
+            tmp[1] = tmp[1].split("-")
+            nl.append(tmp)
+        z = self.sc_add_npsi.GetValue()
+        for i in range(0, c):
+            # print i, nl[i]
+            nk = nl[i]
+            # print nk[1]
+            if len(nk[1]) > 1:
+                try:
+                    s = nk[0] + "=" + str(int(nk[1][0]) + z) + "-" + str(int(nk[1][1]) + z)
+                    self.lb_nps.SetString(i, s)
+                except:
+                    pass
 
     def OnKeyLb(self, evt):
         x = evt.GetKeyCode()
@@ -398,7 +413,7 @@ class MyApp(wx.App):
         nps_list = self.lb_nps.GetItems()
         print "here"
 
-        if self.rb_nps.GetValue():
+        if 1:  # self.rb_nps.GetValue():
             print "Calc system from NPS stars..."
             NPS = range(11)
             for nps in nps_list:
@@ -541,24 +556,24 @@ class MyApp(wx.App):
             # print 'Zb= ', Zb
             # print 'Zv= ', Zv
 
-        if self.rb_ph.GetValue():
-            print "Calc system from PHOT stars..."
-
-            if self.rb.GetSelection() == 1:  # Standard way
-                if len(Zv) > 0:
-                    Zv = pu.RMS_del(Zv, 0.1)
-                    Avs = np.mean(Zv)
-                    res = np.std(Zv)
-                    self.lb_nps_res.Append('Av=%2.4f' % Avs)
-                    self.lb_nps_res.Append('Av_StdDev=%2.4f' % res)
-                if len(Zb) > 0:
-                    Zb = pu.RMS_del(Zb, 0.1)
-                    Abs = np.mean(Zb)
-                    res = np.std(Zb)
-                    self.lb_nps_res.Append('Ab=%2.4f' % Abs)
-                    self.lb_nps_res.Append('Ab_StdDev=%2.4f' % res)
-            else:  # Graphical way
-                print "Graphical way for PHOT stars is not implemented yet!"
+        # if self.rb_ph.GetValue():
+        #     print "Calc system from PHOT stars..."
+        #
+        #     if self.rb.GetSelection() == 1:  # Standard way
+        #         if len(Zv) > 0:
+        #             Zv = pu.RMS_del(Zv, 0.1)
+        #             Avs = np.mean(Zv)
+        #             res = np.std(Zv)
+        #             self.lb_nps_res.Append('Av=%2.4f' % Avs)
+        #             self.lb_nps_res.Append('Av_StdDev=%2.4f' % res)
+        #         if len(Zb) > 0:
+        #             Zb = pu.RMS_del(Zb, 0.1)
+        #             Abs = np.mean(Zb)
+        #             res = np.std(Zb)
+        #             self.lb_nps_res.Append('Ab=%2.4f' % Abs)
+        #             self.lb_nps_res.Append('Ab_StdDev=%2.4f' % res)
+        #     else:  # Graphical way
+        #         print "Graphical way for PHOT stars is not implemented yet!"
 
     def OnEph(self, evt):
         global tle
