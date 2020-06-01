@@ -132,7 +132,11 @@ class MyApp(wx.App):
             # self.lb_nps.SetString(9, "NPS-9=21-22")
             # self.lb_nps.SetString(10, "NPS-10=23-24")
 
-            self.sc_add_npsi = xrc.XRCCTRL(self.frame, "spin_ctrl_3")
+            # self.sc_add_npsi = xrc.XRCCTRL(self.frame, "spin_ctrl_3")
+            self.tc_npsi = xrc.XRCCTRL(self.frame, "text_ctrl_npsi")
+            self.tb_npsi = xrc.XRCCTRL(self.frame, "button_npsi")
+            self.lb_npsi = xrc.XRCCTRL(self.frame, "label_npsi")
+            self.lb_npsi.SetLabel(u"NPS Gr_№\u00B1")
 
             self.lb_nps_res = xrc.XRCCTRL(self.frame, "lb_nps_res")
             self.tc_cb = xrc.XRCCTRL(self.frame, "tc_cb")
@@ -165,6 +169,9 @@ class MyApp(wx.App):
             self.chb_inst = xrc.XRCCTRL(self.frame, "checkbox_2")
             self.tc_kb = xrc.XRCCTRL(self.frame, "text_ctrl_4")
             self.tc_kv = xrc.XRCCTRL(self.frame, "text_ctrl_5")
+            self.tc_kb.Value = "0.6"
+            self.tc_kv.Value = "0.4"
+
             self.tc_cospar = xrc.XRCCTRL(self.frame, "text_ctrl_6")
             self.tc_norad = xrc.XRCCTRL(self.frame, "text_ctrl_7")
             self.tc_name = xrc.XRCCTRL(self.frame, "text_ctrl_8")
@@ -192,7 +199,8 @@ class MyApp(wx.App):
             self.Bind(wx.EVT_KEY_DOWN, self.OnKeyLb, id=xrc.XRCID('lb_nps'))
             # self.Bind(wx.EVT_CHAR, self.OnKeyFrame)
 
-            self.frame.Bind(wx.EVT_SPINCTRL, self.NPS_change, id=xrc.XRCID('spin_ctrl_3'))
+            # self.frame.Bind(wx.EVT_SPINCTRL, self.NPS_change, id=xrc.XRCID('spin_ctrl_3'))
+            self.frame.Bind(wx.EVT_BUTTON, self.NPS_change, id=xrc.XRCID('button_npsi'))
             ######
 
             self.frame.Size = (500, 500)
@@ -220,7 +228,13 @@ class MyApp(wx.App):
             tmp = self.lb_nps.GetString(i).split("=")
             tmp[1] = tmp[1].split("-")
             nl.append(tmp)
-        z = self.sc_add_npsi.GetValue()
+        # z = self.sc_add_npsi.GetValue()
+        z = self.tc_npsi.GetValue()
+        try:
+            z = int(z)
+        except:
+            Warn(self, "Integer required", "Error")
+
         for i in range(0, c):
             # print i, nl[i]
             nk = nl[i]
@@ -390,15 +404,20 @@ class MyApp(wx.App):
         plt.show()
 
     def OnNPS_calc(self, evt):  # NPS and Phot Standart stars calculate system here
-        if self.rb_nps.GetValue():
-            if readNPS() == 0:
-                Warn(self.frame, "Can't find NPS Catalog NPS.cat")
-                return
-        if self.rb_ph.GetValue():
-            if read_phot_cat() == 0:
-                Warn(self.frame, "Can't find Photom Catalog ph.cat")
-                return
-                # exit()
+        # if self.rb_nps.GetValue():
+        #     if readNPS() == 0:
+        #         Warn(self.frame, "Can't find NPS Catalog NPS.cat")
+        #         return
+        # if self.rb_ph.GetValue():
+        #     if read_phot_cat() == 0:
+        #         Warn(self.frame, "Can't find Photom Catalog ph.cat")
+        #         return
+        #         # exit()
+
+        if readNPS() == 0:
+            Warn(self.frame, "Can't find NPS Catalog NPS.cat")
+            return
+
         if len(glist) == 0:
             Warn(self.frame, "Open some file first")
             return
@@ -666,17 +685,19 @@ class MyApp(wx.App):
                     station.date = datetime.strptime(date.strip().replace(" ", "") + ' ' + time, "%d.%m.%y %H:%M:%S")
                 el = []
                 rg = []
+                az = []
                 print station.date
                 j = 1
                 while j < count:
                     sat.compute(station)
                     el.append(m.degrees(sat.alt))
                     rg.append(sat.range / 1000.0)  # km
+                    az.append(m.degrees(sat.az))
                     station.date = ephem.Date(station.date + dt / 3600 / 24)
                     # print station.date, sat.alt, sat.range
                     j = j + 1
                 # no = no[:-1]  # no U
-                return el, rg, n, no, c, tle
+                return el, rg, az, n, no, c, tle
             else:
                 return Warn(self.frame, 'Cant find TLE for such satellite!')
 
@@ -775,7 +796,7 @@ class MyApp(wx.App):
             global tle
             print "tle file=", tle
             if tle:
-                El, Rg, name, nor, cosp, tle_lines = self.calc_from_tle(SAT.c + 1,
+                El, Rg, Az, name, nor, cosp, tle_lines = self.calc_from_tle(SAT.c + 1,
                                                                         SAT.Date.strip(),
                                                                         SAT.Time,
                                                                         SAT.dt,
@@ -1021,7 +1042,7 @@ class MyApp(wx.App):
 
                     if not self.chb_inst.GetValue():
                         # f.write('  UT TIME            mB      mV      El(deg) Rg(Mm) \n')
-                        f.write('  UT TIME              ImpB        ImpV           FonB       FonV         mB      mV      El(deg) Rg(Mm)\n')
+                        f.write('  UT TIME           ImpB-fon     ImpV-fon         FonB       FonV         mB      mV     Az(deg)  El(deg)  Rg(Mm)\n')
                     else:
                         f.write('  UT TIME           N_B     N_V      El(deg) Rg(Mm) \n')
                     for i in range(SAT.c):
@@ -1038,7 +1059,7 @@ class MyApp(wx.App):
                         f.write(str("  %8.3f" % SAT.B[i]))
                         f.write(str("%8.3f" % SAT.V[i]))
                         if (not self.chb_mo.GetValue()) and (not self.chb_inst.GetValue()):
-                            f.write("    %5.3f  %5.3f \n" % (El[i], Rg[i]))
+                            f.write("    %5.3f  %5.3f  %5.3f\n" % (Az[i], El[i], Rg[i]))
                         else:
                             f.write('\n')
 
