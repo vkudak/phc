@@ -203,7 +203,7 @@ class MyApp(wx.App):
             self.frame.Bind(wx.EVT_BUTTON, self.NPS_change, id=xrc.XRCID('button_npsi'))
             ######
 
-            self.frame.Size = (500, 500)
+            self.frame.Size = (500, 550)
             self.frame.Show()
             global self_path
             self_path = os.path.dirname(os.path.abspath(__file__))
@@ -213,14 +213,6 @@ class MyApp(wx.App):
         return True
 
     def NPS_change(self, evt):
-        # self.lb_nps.SetString(0, "NPS-0=3-4")
-        # self.lb_nps.SetString(1, "NPS-1=5-6")
-        # self.lb_nps.SetString(2, "NPS-2=7-8")
-        # self.lb_nps.SetString(3, "NPS-3=9-10")
-        # self.lb_nps.SetString(4, "NPS-4=11-12")
-        # self.lb_nps.SetString(5, "NPS-5=13-14")
-        # self.lb_nps.SetString(6, "NPS-6=15-16")
-        # self.lb_nps.SetString(7, "NPS-7=17-18")
         c = self.lb_nps.GetCount()
         print c
         nl = []
