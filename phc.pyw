@@ -225,7 +225,7 @@ class MyApp(wx.App):
         try:
             z = int(z)
         except:
-            Warn(self, "Integer required", "Error")
+            Warn(self.frame, "Integer required")
 
         for i in range(0, c):
             # print i, nl[i]
@@ -694,6 +694,7 @@ class MyApp(wx.App):
                 return Warn(self.frame, 'Cant find TLE for such satellite!')
 
     def OnStand(self, evt):
+
         global glist
         if self.tel_name.GetSelection() == 1:  # AFU-75
             MAX_M = 10
@@ -771,6 +772,10 @@ class MyApp(wx.App):
         # Standardization
         global Abs
         global Avs
+
+        if (Avs == 0) and (Abs == 0):
+        	Warn(self.frame, "No photometry zaro point. Use NPS stars.")
+
         if self.chb_inst.GetValue() is False:
             # m0
             for i in range(SAT.c):
@@ -795,6 +800,13 @@ class MyApp(wx.App):
                                                                         COSPAR,
                                                                         NORAD,
                                                                         NAME)
+                alarm = False
+                for kk in range(0, len(Az)):
+                	if El[kk] < 0:
+                		alarm = True
+                if alarm:
+                	Warn(self.frame, "Satellite h is below zero. Somethisg is wrong!")
+
                 self.tc_cospar.SetValue(cosp)
                 self.tc_norad.SetValue(nor)
                 self.tc_name.SetValue(name)
