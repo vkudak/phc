@@ -422,172 +422,179 @@ class MyApp(wx.App):
         Kv = float(self.tc_kv.GetValue())
 
         nps_list = self.lb_nps.GetItems()
-        print "here"
+        # print "here"
 
-        if 1:  # self.rb_nps.GetValue():
-            print "Calc system from NPS stars..."
-            NPS = range(11)
-            for nps in nps_list:
-                q = nps.split('=')
-                if len(q) > 1:
-                    n = q[0].split('-')[1]  # NPS number
-                    NPS[int(n)] = q[1].split('-')
-            # print NPS
-            star = []
-            Zb, Zv = [], []
-            Mza = []
-            for i in range(0, 11):
-                if len(NPS[i]) > 1:
-                    st = rw.star()
-                    ind1 = int(NPS[i][0])  # signal
-                    ind2 = int(NPS[i][1])  # fon
-                    st.mB = mB[i]
-                    st.mV = mV[i]
-                    st.bmv = st.mB - st.mV
-                    # if self.rb.GetSelection() == 0:  # Graphical way
-                    st.RA = RA[i]
-                    st.DEC = DEC[i]
-                    st.UT = glist[ind1].Time
-                    st_date = glist[ind1].Date
-                    # print st.RA/15, st.DEC, st.UT
-                    station = ephem.Observer()
-                    station.lat = '48.5635505'
-                    station.long = '22.453751'
-                    station.elevation = 231.1325
-                    starr = ephem.FixedBody()
-                    starr._ra = ephem.hours('%s' % st.RA)
-                    starr._dec = ephem.degrees('%s' % st.DEC)
-                    day, month, year = st_date.split('.')
-                    y = int(year)
-                    if y > 50:
-                        y += 1900
-                    else:
-                        y += 2000
-                    station.date = '%i/%s/%s %s' % (y, month.strip(), day.strip(), st.UT)
-                    starr.compute(station)
-                    # print m.degrees(starr.alt)
-                    st.Mz = 1 / m.cos(m.radians(90 - m.degrees(starr.alt)))
+        try:  # ------------------------------
+            if 1:  # self.rb_nps.GetValue():
+                print "Calc system from NPS stars..."
+                NPS = range(11)
+                for nps in nps_list:
+                    q = nps.split('=')
+                    if len(q) > 1:
+                        n = q[0].split('-')[1]  # NPS number
+                        NPS[int(n)] = q[1].split('-')
+                # print NPS
+                star = []
+                Zb, Zv = [], []
+                Mza = []
+                for i in range(0, 11):
+                    if len(NPS[i]) > 1:
+                        st = rw.star()
+                        ind1 = int(NPS[i][0])  # signal
+                        ind2 = int(NPS[i][1])  # fon
+                        st.mB = mB[i]
+                        st.mV = mV[i]
+                        st.bmv = st.mB - st.mV
+                        # if self.rb.GetSelection() == 0:  # Graphical way
+                        st.RA = RA[i]
+                        st.DEC = DEC[i]
+                        st.UT = glist[ind1].Time
+                        st_date = glist[ind1].Date
+                        # print st.RA/15, st.DEC, st.UT
+                        station = ephem.Observer()
+                        station.lat = '48.5635505'
+                        station.long = '22.453751'
+                        station.elevation = 231.1325
+                        starr = ephem.FixedBody()
+                        starr._ra = ephem.hours('%s' % st.RA)
+                        starr._dec = ephem.degrees('%s' % st.DEC)
+                        day, month, year = st_date.split('.')
+                        y = int(year)
+                        if y > 50:
+                            y += 1900
+                        else:
+                            y += 2000
+                        station.date = '%i/%s/%s %s' % (y, month.strip(), day.strip(), st.UT)
+                        starr.compute(station)
+                        # print m.degrees(starr.alt)
+                        st.Mz = 1 / m.cos(m.radians(90 - m.degrees(starr.alt)))
 
-                    # Standard way...
-                    st.B = np.array(glist[ind1].B)
-                    st.V = np.array(glist[ind1].V)
+                        # Standard way...
+                        st.B = np.array(glist[ind1].B)
+                        st.V = np.array(glist[ind1].V)
 
-                    fonB = np.array(glist[ind2].B)
-                    st.ImpB = st.B.mean(axis=0) - fonB.mean(axis=0)
-                    st.RMSb = st.B.std(axis=0)
+                        fonB = np.array(glist[ind2].B)
+                        st.ImpB = st.B.mean(axis=0) - fonB.mean(axis=0)
+                        st.RMSb = st.B.std(axis=0)
 
-                    fonV = np.array(glist[ind2].V)
-                    st.ImpV = st.V.mean(axis=0) - fonV.mean(axis=0)
-                    st.RMSv = st.V.std(axis=0)
-                    # print i, st.ImpV, st.RMSv
+                        fonV = np.array(glist[ind2].V)
+                        st.ImpV = st.V.mean(axis=0) - fonV.mean(axis=0)
+                        st.RMSv = st.V.std(axis=0)
+                        # print i, st.ImpV, st.RMSv
 
-                    if st.ImpB > 0:
-                        Zb.append(st.mB + Cb * (st.bmv) + 2.5 * m.log10(st.ImpB) + Kb*st.Mz)
-                    if st.ImpV > 0:
-                        # if i >= 0:
-                        #     print 'st.mV, Cv, st.bmv, st.ImpV, Kv, st.Mz'
-                        #     print st.mV, Cv, st.bmv, st.ImpV, Kv, st.Mz
-                        Zv.append(st.mV - Cv * (st.bmv) + 2.5 * m.log10(st.ImpV) + Kv*st.Mz)
-                    Mza.append(st.Mz)
-                    star.append(st)
-            global Abs
-            global Avs
-            # print 'Zb= ', Zb
-            # print 'Zv= ', Zv
-            Mzab = copy(Mza)
+                        if st.ImpB > 0:
+                            Zb.append(st.mB + Cb * (st.bmv) + 2.5 * m.log10(st.ImpB) + Kb*st.Mz)
+                        if st.ImpV > 0:
+                            # if i >= 0:
+                            #     print 'st.mV, Cv, st.bmv, st.ImpV, Kv, st.Mz'
+                            #     print st.mV, Cv, st.bmv, st.ImpV, Kv, st.Mz
+                            Zv.append(st.mV - Cv * (st.bmv) + 2.5 * m.log10(st.ImpV) + Kv*st.Mz)
+                        Mza.append(st.Mz)
+                        star.append(st)
+        except:
+            if ind2 > self.list_box.GetCount():
+                Warn(self.frame, "Wrong group count! Check NPS")
+        else:
+                global Abs
+                global Avs
+                # print 'Zb= ', Zb
+                # print 'Zv= ', Zv
+                Mzab = copy(Mza)
 
-            if self.rb.GetSelection() == 0:  # Graphical way
+                if self.rb.GetSelection() == 0:  # Graphical way
 
-                if len(Zv) > 0:
-                    kv, Avs, res, inddd = pu.lsqFit(Zv, Mza)
-                    while res > 0.1:
-                        X = 0
-                        for j in range(0, len(Zv)):
-                            dz = abs(Zv[j] - (kv * Mza[j] + Avs))
-                            if dz > 0.1 and dz > X:
-                                i = j
-                                X = dz
-                        Zv = np.delete(Zv, i)
-                        # print 'delete B', inddd
-                        Mza = np.delete(Mza, i)
+                    if len(Zv) > 0:
                         kv, Avs, res, inddd = pu.lsqFit(Zv, Mza)
-                    self.lb_nps_res.Append('Av=%2.4f' % Avs)
-                    self.lb_nps_res.Append('Av_Residual=%2.4f' % res)
-                    kv_res = m.atan(abs(kv))
-                    self.lb_nps_res.Append('Kv=%2.4f' % kv_res)
-                    plt.plot(Mza, Zv, 'go')
-                    m_min = np.min(Mza)
-                    m_max = np.max(Mza)
-                    plt.plot([m_min, m_max], [kv * m_min + Avs, kv * m_max + Avs], 'g')
-                    plt.xlabel('Mz')
-                    plt.ylabel('m_st - Cv*(B-V) + m_inst')
+                        while res > 0.1:
+                            X = 0
+                            for j in range(0, len(Zv)):
+                                dz = abs(Zv[j] - (kv * Mza[j] + Avs))
+                                if dz > 0.1 and dz > X:
+                                    i = j
+                                    X = dz
+                            Zv = np.delete(Zv, i)
+                            # print 'delete B', inddd
+                            Mza = np.delete(Mza, i)
+                            kv, Avs, res, inddd = pu.lsqFit(Zv, Mza)
+                        self.lb_nps_res.Append('Av=%2.4f' % Avs)
+                        self.lb_nps_res.Append('Av_Residual=%2.4f' % res)
+                        kv_res = m.atan(abs(kv))
+                        self.lb_nps_res.Append('Kv=%2.4f' % kv_res)
+                        plt.plot(Mza, Zv, 'go')
+                        m_min = np.min(Mza)
+                        m_max = np.max(Mza)
+                        plt.plot([m_min, m_max], [kv * m_min + Avs, kv * m_max + Avs], 'g')
+                        plt.xlabel('Mz')
+                        plt.ylabel('m_st - Cv*(B-V) + m_inst')
 
-                if len(Zb) > 0:
-                    # print Zb
-                    # print Mzab
-                    kb, Abs, res, inddd = pu.lsqFit(Zb, Mzab)
-                    while res > 0.1:
-                        X = 0
-                        for j in range(0, len(Zb)):
-                            dz = abs(Zb[j] - (kb * Mzab[j] + Abs))
-                            if dz > 0.1 and dz > X:
-                                i = j
-                                X = dz
-                        Zb = np.delete(Zb, i)
-                        # print 'delete B', inddd
-                        Mzab = np.delete(Mzab, i)
+                    if len(Zb) > 0:
+                        # print Zb
+                        # print Mzab
                         kb, Abs, res, inddd = pu.lsqFit(Zb, Mzab)
-                    self.lb_nps_res.Append('Ab=%2.4f' % Abs)
-                    self.lb_nps_res.Append('Ab_Residual=%2.4f' % res)
-                    kb_res = m.atan(abs(kb))
-                    self.lb_nps_res.Append('Kb=%2.4f' % kb_res)
-                    plt.plot(Mzab, Zb, 'bo')
-                    m_min = np.min(Mzab)
-                    m_max = np.max(Mzab)
-                    plt.plot([m_min, m_max], [kb * m_min + Abs, kb * m_max + Abs], 'b')
+                        while res > 0.1:
+                            X = 0
+                            for j in range(0, len(Zb)):
+                                dz = abs(Zb[j] - (kb * Mzab[j] + Abs))
+                                if dz > 0.1 and dz > X:
+                                    i = j
+                                    X = dz
+                            Zb = np.delete(Zb, i)
+                            # print 'delete B', inddd
+                            Mzab = np.delete(Mzab, i)
+                            kb, Abs, res, inddd = pu.lsqFit(Zb, Mzab)
+                        self.lb_nps_res.Append('Ab=%2.4f' % Abs)
+                        self.lb_nps_res.Append('Ab_Residual=%2.4f' % res)
+                        kb_res = m.atan(abs(kb))
+                        self.lb_nps_res.Append('Kb=%2.4f' % kb_res)
+                        plt.plot(Mzab, Zb, 'bo')
+                        m_min = np.min(Mzab)
+                        m_max = np.max(Mzab)
+                        plt.plot([m_min, m_max], [kb * m_min + Abs, kb * m_max + Abs], 'b')
 
-                if (len(Zv) < 1 and Avs != 0) or (len(Zb) < 1 and Abs != 0):
-                    wx.MessageBox('You are doing something wrong - No Ab (or Av) coefficient calculated', 'Warning!!!', 1)
+                    if (len(Zv) < 1 and Avs != 0) or (len(Zb) < 1 and Abs != 0):
+                        wx.MessageBox('You are doing something wrong - No Ab (or Av) coefficient calculated', 'Warning!!!', 1)
 
-            else:                     # Standard way
-                if len(Zv) > 0:
-                    print 'delete by RMS < 0.1 in V'
-                    Zv = pu.RMS_del(Zv, 0.1)
-                    Avs = np.mean(Zv)
-                    res = np.std(Zv)
-                    self.lb_nps_res.Append('Av=%2.4f' % Avs)
-                    self.lb_nps_res.Append('Av_StdDev=%2.4f' % res)
-                if len(Zb) > 0:
-                    print 'delete by RMS < 0.1 in B'
-                    Zb = pu.RMS_del(Zb, 0.1)
-                    Abs = np.mean(Zb)
-                    res = np.std(Zb)
-                    self.lb_nps_res.Append('Ab=%2.4f' % Abs)
-                    self.lb_nps_res.Append('Ab_StdDev=%2.4f' % res)
-            # print 'Zb= ', Zb
-            # print 'Zv= ', Zv
+                else:                     # Standard way
+                    if len(Zv) > 0:
+                        print 'delete by RMS < 0.1 in V'
+                        Zv = pu.RMS_del(Zv, 0.1)
+                        Avs = np.mean(Zv)
+                        res = np.std(Zv)
+                        self.lb_nps_res.Append('Av=%2.4f' % Avs)
+                        self.lb_nps_res.Append('Av_StdDev=%2.4f' % res)
+                    if len(Zb) > 0:
+                        print 'delete by RMS < 0.1 in B'
+                        Zb = pu.RMS_del(Zb, 0.1)
+                        Abs = np.mean(Zb)
+                        res = np.std(Zb)
+                        self.lb_nps_res.Append('Ab=%2.4f' % Abs)
+                        self.lb_nps_res.Append('Ab_StdDev=%2.4f' % res)
+                # print 'Zb= ', Zb
+                # print 'Zv= ', Zv
 
-        # if self.rb_ph.GetValue():
-        #     print "Calc system from PHOT stars..."
-        #
-        #     if self.rb.GetSelection() == 1:  # Standard way
-        #         if len(Zv) > 0:
-        #             Zv = pu.RMS_del(Zv, 0.1)
-        #             Avs = np.mean(Zv)
-        #             res = np.std(Zv)
-        #             self.lb_nps_res.Append('Av=%2.4f' % Avs)
-        #             self.lb_nps_res.Append('Av_StdDev=%2.4f' % res)
-        #         if len(Zb) > 0:
-        #             Zb = pu.RMS_del(Zb, 0.1)
-        #             Abs = np.mean(Zb)
-        #             res = np.std(Zb)
-        #             self.lb_nps_res.Append('Ab=%2.4f' % Abs)
-        #             self.lb_nps_res.Append('Ab_StdDev=%2.4f' % res)
-        #     else:  # Graphical way
-        #         print "Graphical way for PHOT stars is not implemented yet!"
+            # if self.rb_ph.GetValue():
+            #     print "Calc system from PHOT stars..."
+            #
+            #     if self.rb.GetSelection() == 1:  # Standard way
+            #         if len(Zv) > 0:
+            #             Zv = pu.RMS_del(Zv, 0.1)
+            #             Avs = np.mean(Zv)
+            #             res = np.std(Zv)
+            #             self.lb_nps_res.Append('Av=%2.4f' % Avs)
+            #             self.lb_nps_res.Append('Av_StdDev=%2.4f' % res)
+            #         if len(Zb) > 0:
+            #             Zb = pu.RMS_del(Zb, 0.1)
+            #             Abs = np.mean(Zb)
+            #             res = np.std(Zb)
+            #             self.lb_nps_res.Append('Ab=%2.4f' % Abs)
+            #             self.lb_nps_res.Append('Ab_StdDev=%2.4f' % res)
+            #     else:  # Graphical way
+            #         print "Graphical way for PHOT stars is not implemented yet!"
 
     def OnEph(self, evt):
         global tle
+        global TLE_list
+        TLE_list = []
         tle = False
         El = np.array([])
         Rg = np.array([])
@@ -632,69 +639,73 @@ class MyApp(wx.App):
         if COSPAR == '' and NORAD == '' and NAME == '':
             return
         else:
-            tle = []
-            for i in range(0, len(TLE_list)):
-                l2 = TLE_list[i][1].split()
-                cosp = l2[2]
-                nor = l2[1]
-                name = TLE_list[i][0]
-                if cosp == COSPAR:
-                    c = l2[2]
-                    no = l2[1][:-1]
-                    n = TLE_list[i][0]
-                    tle = TLE_list[i]
-            if tle == []:
+            try:
+                tle = []
                 for i in range(0, len(TLE_list)):
                     l2 = TLE_list[i][1].split()
-                    nor = l2[1][:-1]
-                    # print 'nor=', nor
-                    if nor == NORAD:
-                        c = l2[2]
-                        no = l2[1][:-1]
-                        n = TLE_list[i][0]
-                        tle = TLE_list[i]
-            if tle == []:
-                for i in range(0, len(TLE_list)):
-                    l2 = TLE_list[i][1].split()
+                    cosp = l2[2]
+                    nor = l2[1]
                     name = TLE_list[i][0]
-                    if name == NAME:
+                    if cosp == COSPAR:
                         c = l2[2]
                         no = l2[1][:-1]
                         n = TLE_list[i][0]
                         tle = TLE_list[i]
-            if len(tle) > 0 :
-                # Calculating  El, Rg
-                station = ephem.Observer()
-                station.lat = '48.5635505'
-                station.long = '22.453751'
-                station.elevation = 231.1325
+                if tle == []:
+                    for i in range(0, len(TLE_list)):
+                        l2 = TLE_list[i][1].split()
+                        nor = l2[1][:-1]
+                        # print 'nor=', nor
+                        if nor == NORAD:
+                            c = l2[2]
+                            no = l2[1][:-1]
+                            n = TLE_list[i][0]
+                            tle = TLE_list[i]
+                if tle == []:
+                    for i in range(0, len(TLE_list)):
+                        l2 = TLE_list[i][1].split()
+                        name = TLE_list[i][0]
+                        if name == NAME:
+                            c = l2[2]
+                            no = l2[1][:-1]
+                            n = TLE_list[i][0]
+                            tle = TLE_list[i]
+                if len(tle) > 0 :
+                    # Calculating  El, Rg
+                    station = ephem.Observer()
+                    station.lat = '48.5635505'
+                    station.long = '22.453751'
+                    station.elevation = 231.1325
 
-                sat = ephem.readtle(tle[0], tle[1], tle[2])
-                try:
-                    station.date = datetime.strptime(date.strip().replace(" ", "") + ' ' + time, "%d.%m.%y %H:%M:%S.%f")
-                except Exception:
-                    print "Error. Trying Options #2 - time without seconds fractions"
-                    station.date = datetime.strptime(date.strip().replace(" ", "") + ' ' + time, "%d.%m.%y %H:%M:%S")
-                el = []
-                rg = []
-                az = []
-                print station.date
-                j = 1
-                while j < count:
-                    sat.compute(station)
-                    el.append(m.degrees(sat.alt))
-                    rg.append(sat.range / 1000.0)  # km
-                    az.append(m.degrees(sat.az))
-                    station.date = ephem.Date(station.date + dt / 3600 / 24)
-                    # print station.date, sat.alt, sat.range
-                    j = j + 1
-                # no = no[:-1]  # no U
-                return el, rg, az, n, no, c, tle
-            else:
-                return Warn(self.frame, 'Cant find TLE for such satellite!')
+                    sat = ephem.readtle(tle[0], tle[1], tle[2])
+                    try:
+                        station.date = datetime.strptime(date.strip().replace(" ", "") + ' ' + time, "%d.%m.%y %H:%M:%S.%f")
+                    except Exception:
+                        print "Error. Trying Options #2 - time without seconds fractions"
+                        station.date = datetime.strptime(date.strip().replace(" ", "") + ' ' + time, "%d.%m.%y %H:%M:%S")
+                    el = []
+                    rg = []
+                    az = []
+                    print station.date
+                    j = 1
+                    while j < count:
+                        sat.compute(station)
+                        el.append(m.degrees(sat.alt))
+                        rg.append(sat.range / 1000.0)  # km
+                        az.append(m.degrees(sat.az))
+                        station.date = ephem.Date(station.date + dt / 3600 / 24)
+                        # print station.date, sat.alt, sat.range
+                        j = j + 1
+                    # no = no[:-1]  # no U
+                    return el, rg, az, n, no, c, tle
+                else:
+                    return Warn(self.frame, 'Cant find TLE for such satellite!')
+            except Exception as ex:
+                return Warn(self.frame, "Error occurred. Probably wrong TLE file. \n Error = " + ex.message)
+                # print "Error ---> " + ex.message
+
 
     def OnStand(self, evt):
-
         global glist
         if self.tel_name.GetSelection() == 1:  # AFU-75
             MAX_M = 10
@@ -733,11 +744,34 @@ class MyApp(wx.App):
                 # FON_V = ndimage.median_filter(FON_V, size=3)
 
                 ###B
-                FON_B2 = pu.interp(FON_B, count, SAT.c)  # - 1
-                FON_B2 = np.array(FON_B2)
+                # FON_B2 = pu.interp2(FON_B, count, SAT.c)  # - 1
+                # FON_B2 = np.array(FON_B2)
+
+                FON_B2_2, r2_2, sd = pu.fit_k(FON_B, SAT.c, k=2)
+                FON_B2_3, r2_3, sd = pu.fit_k(FON_B, SAT.c, k=3)
+
+                if r2_3 > r2_2:
+                    FON_B2 = np.array(FON_B2_3)
+                    print "3rd order used for SAT FON_B interpretation R2 = %3.2f" % r2_3
+                else:
+                    FON_B2 = np.array(FON_B2_2)
+                    print "2nd order used for SAT FON_B interpretation R2 = %3.2f" % r2_3
+
                 ###V
-                FON_V2 = pu.interp(FON_V, count, SAT.c)  # - 1
-                FON_V2 = np.array(FON_V2)
+                # FON_V2 = pu.interp2(FON_V, count, SAT.c)  # - 1
+                # FON_V2 = np.array(FON_V2)
+
+                FON_V2_2, r2_2, sd = pu.fit_k(FON_V, SAT.c, k=2)
+                FON_V2_3, r2_3, sd = pu.fit_k(FON_V, SAT.c, k=3)
+
+                if r2_3 > r2_2:
+                    FON_V2 = np.array(FON_V2_3)
+                    print "3rd order used for SAT FON_V interpretation R2 = %3.2f" % r2_3
+                else:
+                    FON_V2 = np.array(FON_V2_2)
+                    print "2nd order used for SAT FON_V interpretation R2 = %3.2f" % r2_2
+
+
                 print "Interpolation DONE!!!"
                 print 'Count=', len(FON_V2)
                 while len(FON_V2) > SAT.c:
@@ -793,13 +827,17 @@ class MyApp(wx.App):
             global tle
             print "tle file=", tle
             if tle:
-                El, Rg, Az, name, nor, cosp, tle_lines = self.calc_from_tle(SAT.c + 1,
-                                                                        SAT.Date.strip(),
-                                                                        SAT.Time,
-                                                                        SAT.dt,
-                                                                        COSPAR,
-                                                                        NORAD,
-                                                                        NAME)
+                rr = self.calc_from_tle(SAT.c + 1,
+                                                    SAT.Date.strip(),
+                                                    SAT.Time,
+                                                    SAT.dt,
+                                                    COSPAR,
+                                                    NORAD,
+                                                    NAME)
+                if rr == None:
+                    return None
+                else:
+                    El, Rg, Az, name, nor, cosp, tle_lines = rr
                 alarm = False
                 for kk in range(0, len(Az)):
                     if El[kk] < 0:
@@ -814,6 +852,7 @@ class MyApp(wx.App):
                 NORAD = nor
                 # print NORAD # !!!!
                 NAME = name
+
             for i in range(SAT.c):
                 if self.rb.GetSelection() == 1:  # Mean A coefficient
                     # mz = 1 / m.cos(m.radians(42)) - 1 / m.cos(m.radians(90 - El[i]))
@@ -867,7 +906,10 @@ class MyApp(wx.App):
             minV = minB
             maxV = maxB
         if self.chb_inst.GetValue() is False:
-            plt.axis([Tmin, Tmax, max(maxB, maxV), min(minB, minV)])
+            miny = max(maxB, maxV)
+            maxy = min(minB, minV)
+            maxy = maxy - 0.1 * maxy
+            plt.axis([Tmin, Tmax, miny, maxy])
             plt.ylabel('m_st')
         else:
             plt.axis([Tmin, Tmax, min(minB, minV), max(maxB, maxV)])
@@ -894,7 +936,7 @@ class MyApp(wx.App):
         for kk in range(0, len(Az2)):
             azt = Az2[kk]
             elt = El2[kk]
-            Az2s.append("%3.2f; %3.2f"%(azt, elt))
+            Az2s.append("%3.1f; %3.1f"%(azt, elt))
         Az2s = np.array(Az2s)
         ax2.set_xticks(Tt2[tt_idx])  # new_tick_locations
         ax2.set_xticklabels(Az2s[tt_idx])
@@ -908,9 +950,10 @@ class MyApp(wx.App):
             c_time = ""
         else:
             c_time = culm_time
-        ax2.set_title("Satellite Name:%s, NORAD:%s, COSPAR:%s \n Date=%s  UT=%s   dt=%s    %s" % (NAME, NORAD, COSPAR, SAT.Date.strip(), SAT.Time, str(SAT.dt), c_time), pad=28)
+        ax2.set_title("Satellite Name:%s, NORAD:%s, COSPAR:%s \n Date=%s  UT=%s   dt=%s    %s" %
+                      (NAME, NORAD, COSPAR, SAT.Date.strip(), SAT.Time, str(SAT.dt), c_time), pad=28, fontsize=10)
         # plt.title("Satellite Name:%s, NORAD:%s, COSPAR:%s \n Date=%s  UT=%s   dt=%s    %s" % (NAME, NORAD, COSPAR, SAT.Date.strip(), SAT.Time, str(SAT.dt), c_time), pad=30)
-        plt.savefig(scr_pth + "\\tmp_last_fig.png")
+        plt.savefig(scr_pth + "//tmp_last_fig.png")
         plt.show()
 
         if NORAD == '':
@@ -933,11 +976,11 @@ class MyApp(wx.App):
             wildcard = "PHC(*.phc)|*.phc| UMOSS(*.umoss)|*.umoss| PH1(*.ph1)|*.ph1"
             # if not os.path.exists(os.getcwd() + '/' + NAME + "_" + UTd.strftime("%y%m%d_%H%M")):
             #     os.makedirs(os.getcwd() + '/' + NAME+ "_" + UTd.strftime("%y%m%d_%H%M"))
-            if not os.path.exists(scr_pth + '\\RESULTS\\' + NORAD):
-                os.makedirs(scr_pth + '\\RESULTS\\' + NORAD)
+            if not os.path.exists(scr_pth + '//RESULTS//' + NORAD):
+                os.makedirs(scr_pth + '//RESULTS//' + NORAD)
             dlgS = wx.FileDialog(
                 self.frame, message="Save File in different formats",
-                defaultDir=scr_pth + '\\RESULTS\\' + NORAD,
+                defaultDir=scr_pth + '//RESULTS//' + NORAD,
                 defaultFile=NORAD + "_" + UTd.strftime("%y%m%d_%H%M") + '.phc',
                 wildcard=wildcard,
                 style=wx.FD_SAVE | wx.FD_CHANGE_DIR
@@ -1100,12 +1143,12 @@ class MyApp(wx.App):
                         # shutil.copyfile(scr_pth+"\\tmp_last_fig.png", NORAD + "_" + T0.strftime("%y%m%d_%H%M") + ".png")
                         # scr_pth = os.path.dirname(os.path.realpath(__file__))
                         # print scr_pth
-                        shutil.copyfile(scr_pth + "\\tmp_last_fig.png", scr_pth + "\\RESULTS\\" + NORAD + "\\" + NORAD+ "_" + T0.strftime("%y%m%d_%H%M") + ".png")
+                        shutil.copyfile(scr_pth + "//tmp_last_fig.png", scr_pth + "//RESULTS//" + NORAD + "//" + NORAD+ "_" + T0.strftime("%y%m%d_%H%M") + ".png")
                         # scr_pth + '\\RESULTS\\' + NORAD + "\\" + NORAD + "_" + UTd.strftime("%y%m%d_%H%M")
                     f.close()
             dlgS.Destroy()
         dlg.Destroy()
-        os.remove(scr_pth + "\\tmp_last_fig.png")
+        os.remove(scr_pth + "//tmp_last_fig.png")
 
 
 if __name__ == "__main__":

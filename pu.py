@@ -21,10 +21,35 @@ def interp(A, an, bn):
     A2 = interpolate.splev(xnew, tck, der=0)
     return A2
 
-def interp2(A, an, bn):
-    # f = interpolate.interp1d(A, an)
-    f2 = interpolate.interp1d(A, an, kind='cubic')
-    return f2(bn)
+def fit_k(A, new_len, k=3):
+    len_a = len(A)
+    x1 = np.linspace(0, len_a, num=len_a)
+    koef = np.polyfit(x1, A, k)
+    p3_eq = np.poly1d(koef)
+
+    x2 = np.linspace(0, len_a, num=new_len)
+    B = p3_eq(x2)
+
+    ERROR = []  # error list
+    SD = []  # standard deviation list
+    R2 = []  # R-squared list
+
+    Fit = []
+    n = len_a
+    for j in range(n):
+        value = p3_eq(x1[j])
+        Fit.append(value)
+
+    # Calculating RMS, R^2 and SD
+
+    err = np.sqrt(np.sum((pow((np.array(Fit) - A), 2))) / n)
+    tss = np.sum(pow((A - np.mean(A)), 2))
+    rss = np.sum(pow((A - np.array(Fit)), 2))
+
+    r2 = (1 - (rss / tss))
+    sd = pow((rss / (n - 2)), 0.5)
+
+    return B, r2, sd
 
 def chunks(l, n):
     return [l[i:i + n] for i in range(0, len(l), n)]
