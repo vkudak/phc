@@ -21,6 +21,10 @@ def interp(A, an, bn):
     A2 = interpolate.splev(xnew, tck, der=0)
     return A2
 
+def interp2(A, an, bn):
+    # f = interpolate.interp1d(A, an)
+    f2 = interpolate.interp1d(A, an, kind='cubic')
+    return f2(bn)
 
 def chunks(l, n):
     return [l[i:i + n] for i in range(0, len(l), n)]

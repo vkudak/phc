@@ -774,7 +774,7 @@ class MyApp(wx.App):
         global Avs
 
         if (Avs == 0) and (Abs == 0):
-        	Warn(self.frame, "No photometry zaro point. Use NPS stars.")
+            Warn(self.frame, "No photometry zaro point. Use NPS stars.")
 
         if self.chb_inst.GetValue() is False:
             # m0
@@ -802,10 +802,10 @@ class MyApp(wx.App):
                                                                         NAME)
                 alarm = False
                 for kk in range(0, len(Az)):
-                	if El[kk] < 0:
-                		alarm = True
+                    if El[kk] < 0:
+                        alarm = True
                 if alarm:
-                	Warn(self.frame, "Satellite h is below zero. Somethisg is wrong!")
+                    Warn(self.frame, "Satellite h is below zero. Something is wrong!")
 
                 self.tc_cospar.SetValue(cosp)
                 self.tc_norad.SetValue(nor)
@@ -853,6 +853,11 @@ class MyApp(wx.App):
             jj = jj + 1
         # ##########################################################################
         plt.rcParams['figure.figsize'] = figsize
+
+        # fig = plt.figure()
+        # ax1 = fig.add_subplot(111)
+        # ax2 = ax1.twiny()
+
         Tmin = min(Tt)
         Tmax = max(Tt)
         if np.mean(SAT.B) == MAX_M:  # correct axis limit
@@ -874,13 +879,37 @@ class MyApp(wx.App):
         if np.mean(SAT.V) not in [MAX_M, MAX_N]:  # 65535:
             plt.plot(Tt, SAT.V, 'g.--', label="V")
         ax = plt.gca()
+
+        # Azimuth axis
+        ax2 = ax.twiny()
+        ax2.set_xlim(ax.get_xlim())
+        numElems = 5
+        tt_idx = np.round(np.linspace(0, len(Tt) - 1, numElems)).astype(int)
+        Tt2 = np.array(Tt)
+        Az2 = np.array(Az)
+        El2 = np.array(El)
+
+        # Az2s = ["%3.2f" % Azt for Azt in Az2]
+        Az2s = []
+        for kk in range(0, len(Az2)):
+            azt = Az2[kk]
+            elt = El2[kk]
+            Az2s.append("%3.2f; %3.2f"%(azt, elt))
+        Az2s = np.array(Az2s)
+        ax2.set_xticks(Tt2[tt_idx])  # new_tick_locations
+        ax2.set_xticklabels(Az2s[tt_idx])
+        ax2.set_xlabel(r"Az;h [deg]")
+        ax2.tick_params(axis='x', which='major', pad=0)
+        # ----------------------------------------------------
+
         ax.xaxis.set_major_formatter(timeFmt)
         ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
         if not self.chb_add_culm.GetValue():
             c_time = ""
         else:
             c_time = culm_time
-        plt.title("Satellite Name:%s, NORAD:%s, COSPAR:%s \n Date=%s  UT=%s   dt=%s    %s" % (NAME, NORAD, COSPAR, SAT.Date.strip(), SAT.Time, str(SAT.dt), c_time))
+        ax2.set_title("Satellite Name:%s, NORAD:%s, COSPAR:%s \n Date=%s  UT=%s   dt=%s    %s" % (NAME, NORAD, COSPAR, SAT.Date.strip(), SAT.Time, str(SAT.dt), c_time), pad=28)
+        # plt.title("Satellite Name:%s, NORAD:%s, COSPAR:%s \n Date=%s  UT=%s   dt=%s    %s" % (NAME, NORAD, COSPAR, SAT.Date.strip(), SAT.Time, str(SAT.dt), c_time), pad=30)
         plt.savefig(scr_pth + "\\tmp_last_fig.png")
         plt.show()
 
