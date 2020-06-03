@@ -909,7 +909,7 @@ class MyApp(wx.App):
             miny = max(maxB, maxV)
             maxy = min(minB, minV)
             maxy = maxy - 0.5
-            print miny, maxy
+            # print miny, maxy
             plt.axis([Tmin, Tmax, miny, maxy])
             plt.ylabel('m_st')
         else:
