@@ -56,7 +56,9 @@ def read(path):
     #print dt
     # f.readline()
     culm_time = f.readline()
-    culm_time = culm_time.replace(" ", "") #.strip()
+    culm_time = culm_time.split(" :")
+    culm_time = culm_time[1].replace(" ", "") #
+    culm_time = culm_time.rstrip()
     f.readline()
     f.readline()  # pass
     f.readline()

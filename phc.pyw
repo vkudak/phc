@@ -948,13 +948,15 @@ class MyApp(wx.App):
         ax.xaxis.set_major_formatter(timeFmt)
         ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
         if not self.chb_add_culm.GetValue():
-            c_time = ""
             t_pos = 0.99
+            ax2.set_title("Satellite Name:%s, NORAD:%s, COSPAR:%s \n Date=%s  UT=%s   dt=%s" %
+                          (NAME, NORAD, COSPAR, SAT.Date.strip(), SAT.Time, str(SAT.dt)), pad=28, fontsize=10)
         else:
             c_time = culm_time
-            t_pos = 0.96
-        ax2.set_title("Satellite Name:%s, NORAD:%s, COSPAR:%s \n Date=%s  UT=%s   dt=%s    %s" %
-                      (NAME, NORAD, COSPAR, SAT.Date.strip(), SAT.Time, str(SAT.dt), c_time), pad=28, fontsize=10)
+            t_pos = 0.99
+            ax2.set_title("Satellite Name:%s, NORAD:%s, COSPAR:%s \n Date=%s  UT=%s   dt=%s   Culm_Time=%s" %
+                          (NAME, NORAD, COSPAR, SAT.Date.strip(), SAT.Time, str(SAT.dt), c_time), pad=28, fontsize=10)
+
         ax2.title.set_position([.5, t_pos])
         # plt.title("Satellite Name:%s, NORAD:%s, COSPAR:%s \n Date=%s  UT=%s   dt=%s    %s" % (NAME, NORAD, COSPAR, SAT.Date.strip(), SAT.Time, str(SAT.dt), c_time), pad=30)
         plt.savefig(scr_pth + "//tmp_last_fig.png")
