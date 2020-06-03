@@ -908,7 +908,8 @@ class MyApp(wx.App):
         if self.chb_inst.GetValue() is False:
             miny = max(maxB, maxV)
             maxy = min(minB, minV)
-            maxy = maxy - 0.1 * maxy
+            maxy = maxy - 0.5
+            print miny, maxy
             plt.axis([Tmin, Tmax, miny, maxy])
             plt.ylabel('m_st')
         else:
@@ -939,8 +940,8 @@ class MyApp(wx.App):
             Az2s.append("%3.1f; %3.1f"%(azt, elt))
         Az2s = np.array(Az2s)
         ax2.set_xticks(Tt2[tt_idx])  # new_tick_locations
-        ax2.set_xticklabels(Az2s[tt_idx])
-        ax2.set_xlabel(r"Az;h [deg]")
+        ax2.set_xticklabels(Az2s[tt_idx], fontsize=8)
+        ax2.set_xlabel(r"Az;h [deg]", fontsize=8)
         ax2.tick_params(axis='x', which='major', pad=0)
         # ----------------------------------------------------
 
@@ -948,10 +949,13 @@ class MyApp(wx.App):
         ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
         if not self.chb_add_culm.GetValue():
             c_time = ""
+            t_pos = 0.99
         else:
             c_time = culm_time
+            t_pos = 0.96
         ax2.set_title("Satellite Name:%s, NORAD:%s, COSPAR:%s \n Date=%s  UT=%s   dt=%s    %s" %
                       (NAME, NORAD, COSPAR, SAT.Date.strip(), SAT.Time, str(SAT.dt), c_time), pad=28, fontsize=10)
+        ax2.title.set_position([.5, t_pos])
         # plt.title("Satellite Name:%s, NORAD:%s, COSPAR:%s \n Date=%s  UT=%s   dt=%s    %s" % (NAME, NORAD, COSPAR, SAT.Date.strip(), SAT.Time, str(SAT.dt), c_time), pad=30)
         plt.savefig(scr_pth + "//tmp_last_fig.png")
         plt.show()
