@@ -33,7 +33,7 @@ El, Rg = [], []
 tle = False
 TLE_list = []
 self_path = ''  # global path to pch.pyw
-figsize = 12, 6
+figsize = 9, 6
 default_tel = 1  # 0- TPL; 1-AFU;
 scr_pth = os.path.dirname(os.path.realpath(__file__))
 culm_time = ""
@@ -923,7 +923,7 @@ class MyApp(wx.App):
             plt.plot(Tt, SAT.V, 'g.--', label="V")
         ax = plt.gca()
 
-        # Azimuth axis
+        # Azimuth axis----------------------------------
         ax2 = ax.twiny()
         ax2.set_xlim(ax.get_xlim())
         numElems = 5
@@ -934,10 +934,13 @@ class MyApp(wx.App):
 
         # Az2s = ["%3.2f" % Azt for Azt in Az2]
         Az2s = []
+        Tt2s = []
         for kk in range(0, len(Az2)):
             azt = Az2[kk]
             elt = El2[kk]
+            t = Tt2[kk]
             Az2s.append("%3.1f; %3.1f"%(azt, elt))
+            Tt2s.append(t.strftime("%H:%M:%S"))
         Az2s = np.array(Az2s)
         ax2.set_xticks(Tt2[tt_idx])  # new_tick_locations
         ax2.set_xticklabels(Az2s[tt_idx], fontsize=8)
@@ -945,7 +948,11 @@ class MyApp(wx.App):
         ax2.tick_params(axis='x', which='major', pad=0)
         # ----------------------------------------------------
 
-        ax.xaxis.set_major_formatter(timeFmt)
+        # ax.xaxis.set_major_formatter(timeFmt)
+        Tt2s = np.array(Tt2s)
+        ax.set_xticks(Tt2[tt_idx])  # new_tick_locations
+        ax.set_xticklabels(Tt2s[tt_idx], fontsize=10)
+
         ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
         if not self.chb_add_culm.GetValue():
             t_pos = 0.99
@@ -959,6 +966,8 @@ class MyApp(wx.App):
 
         ax2.title.set_position([.5, t_pos])
         # plt.title("Satellite Name:%s, NORAD:%s, COSPAR:%s \n Date=%s  UT=%s   dt=%s    %s" % (NAME, NORAD, COSPAR, SAT.Date.strip(), SAT.Time, str(SAT.dt), c_time), pad=30)
+        ax.xaxis.grid()
+        ax.yaxis.grid()
         plt.savefig(scr_pth + "//tmp_last_fig.png")
         plt.show()
 
