@@ -319,7 +319,7 @@ class MyApp(wx.App):
             paths = dlg.GetPaths()
             for path in paths:
                 global glist
-                NPS_list = rw.read(path)
+                NPS_list, c_fake = rw.read(path)
                 cc = len(glist) - 1
                 for N in range(1, len(NPS_list)):
                     glist.append(NPS_list[N])
@@ -330,12 +330,12 @@ class MyApp(wx.App):
     def OnAdd_ph_stars(self, evt):
         wildcard = "TXT(*.txt)|*.txt;*.TXT"
         dlg = wx.FileDialog(self.frame, message="Choose File", defaultDir=os.getcwd(),
-                            defaultFile='', wildcard=wildcard, style=wx.OPEN | wx.CHANGE_DIR)
+                            defaultFile='', wildcard=wildcard, style=wx.FD_OPEN | wx.FD_CHANGE_DIR)
         if dlg.ShowModal() == wx.ID_OK:
             paths = dlg.GetPaths()
             for path in paths:
                 global glist
-                Star_list = rw.read(path)
+                Star_list, c_fake = rw.read(path)
                 cc = len(glist) - 1
                 for N in range(1, len(Star_list)):
                     glist.append(Star_list[N])
