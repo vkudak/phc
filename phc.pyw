@@ -363,10 +363,10 @@ class MyApp(wx.App):
             locale.setlocale(locale.LC_NUMERIC, 'C')  # for graph
             if np.mean(glist[item].B) != 65535:
                 # plt.plot(range(glist[item].c), glist[item].B, 'b-')
-                plt.plot(Tt, glist[item].B, 'b.-')
+                plt.plot(Tt, glist[item].B, 'b.-', label="B")
             if np.mean(glist[item].V) != 65535:
                 # plt.plot(range(glist[item].c), glist[item].V, 'g-')
-                plt.plot(Tt, glist[item].V, 'g.--')
+                plt.plot(Tt, glist[item].V, 'g^--', mfc='none', ms=3, label="V")
             ax = plt.gca()
             ax.xaxis.set_major_formatter(timeFmt)
             Mean_B = np.mean(glist[item].B)
@@ -377,6 +377,7 @@ class MyApp(wx.App):
             STD_V = 100.0 * STD_V / Mean_V
             plt.title("Date=%s  UT=%s   dt=%s\n Mean_B=%5.3f  STD_B=%5.3f%%  Mean_V=%5.3f  STD_V=%5.3f%%"
                       % (Data, UT, str(dt), Mean_B, STD_B, Mean_V, STD_V))
+            plt.legend(loc='center left', bbox_to_anchor=(1, 0.5))
             plt.show()
 
     def OnQuit(self, evt):
@@ -710,7 +711,7 @@ class MyApp(wx.App):
         if self.tel_name.GetSelection() == 1:  # AFU-75
             MAX_M = 10
         else:  # TPL
-            MAX_M = 13
+            MAX_M = 12
         MAX_N = 65535
         Kb = float(self.tc_kb.GetValue())
         Kv = float(self.tc_kv.GetValue())
@@ -799,7 +800,7 @@ class MyApp(wx.App):
 
         global s_fon_B, s_fon_V
         # if len(FON_B2) > 0:
-        if isinstance(FON_B2,np.ndarray):
+        if isinstance(FON_B2, np.ndarray):
             s_fon_B = FON_B2
             s_fon_V = FON_V2
 
@@ -866,6 +867,12 @@ class MyApp(wx.App):
                     SAT.B[i] = SAT.B[i] - mzb + mr
                 if SAT.V[i] != MAX_M:
                     SAT.V[i] = SAT.V[i] - mzv + mr
+        # TUT !!!!!!!!!!!!!!!! Cut m_st below 10-13
+        for w in range(0, SAT.c):
+            if SAT.B[w] > MAX_M:
+                SAT.B[w] = MAX_M
+            if SAT.V[w] > MAX_M:
+                SAT.V[w] = MAX_M
         # Graphic!!!
         if len(SAT.B) > 0:
             SAT.B = np.array(SAT.B)
@@ -920,7 +927,7 @@ class MyApp(wx.App):
         if np.mean(SAT.B) not in [MAX_M, MAX_N]:  # 65535:
             plt.plot(Tt, SAT.B, 'b.-', label="B")
         if np.mean(SAT.V) not in [MAX_M, MAX_N]:  # 65535:
-            plt.plot(Tt, SAT.V, 'g.--', label="V")
+            plt.plot(Tt, SAT.V, 'g^--', mfc='none', ms=3, label="V")
         ax = plt.gca()
 
         # Azimuth axis----------------------------------
