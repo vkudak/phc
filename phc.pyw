@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/python2.7
 # -*- coding: utf-8 -*-
 """
 This is a main unit of Photometry curves standardization program
@@ -495,6 +495,8 @@ class MyApp(wx.App):
         except:
             if ind2 > self.list_box.GetCount():
                 Warn(self.frame, "Wrong group count! Check NPS")
+            else:
+                Warn(self.frame, "Error in NPS_calc procedure")
         else:
                 global Abs
                 global Avs
