@@ -33,7 +33,7 @@ El, Rg = [], []
 tle = False
 TLE_list = []
 self_path = ''  # global path to pch.pyw
-figsize = 9, 6
+figsize = 12, 6  # 9, 6
 default_tel = 1  # 0- TPL; 1-AFU;
 scr_pth = os.path.dirname(os.path.realpath(__file__))
 culm_time = ""
@@ -796,6 +796,26 @@ class MyApp(wx.App):
             sn = self.sc_sat_gr.GetValue()
             SAT = copy(glist[sn])
 
+        ### graph im impuls
+        jj = 0
+        Tt = []
+        timeFmt = DateFormatter("%H:%M:%S")
+        UTd = datetime.strptime(SAT.Date.strip().replace(" ", "") + ' ' + SAT.Time, "%d.%m.%y %H:%M:%S")
+        print UTd
+        while jj < SAT.c:
+            Tt.append(UTd + timedelta(seconds=jj * SAT.dt))
+            jj = jj + 1
+        plt.rcParams['figure.figsize'] = figsize
+        # plt.tile()
+        # t_pos = 0.99
+        plt.title("Satellite Name:%s, NORAD:%s, COSPAR:%s \n Date=%s  UT=%s   dt=%s" %
+                      (NAME, NORAD, COSPAR, SAT.Date.strip(), SAT.Time, str(SAT.dt)), pad=28, fontsize=12)
+        plt.plot(Tt, SAT.B, 'b.-', label="B")
+        plt.plot(Tt, SAT.V, 'g^--', mfc='none', ms=3, label="V")
+        plt.savefig(scr_pth + "//tmp_last_fig_imp.png")
+        plt.clf()
+        #############################
+
         global S_Imp_B, S_Imp_V
         S_Imp_B = copy(SAT.B)
         S_Imp_V = copy(SAT.V)
@@ -1168,11 +1188,13 @@ class MyApp(wx.App):
                         # scr_pth = os.path.dirname(os.path.realpath(__file__))
                         # print scr_pth
                         shutil.copyfile(scr_pth + "//tmp_last_fig.png", scr_pth + "//RESULTS//" + NORAD + "//" + NORAD+ "_" + T0.strftime("%y%m%d_%H%M") + ".png")
+                        shutil.copyfile(scr_pth + "//tmp_last_fig_imp.png", scr_pth + "//RESULTS//" + NORAD + "//" + NORAD + "_" + T0.strftime("%y%m%d_%H%M") + "_Imp.png")
                         # scr_pth + '\\RESULTS\\' + NORAD + "\\" + NORAD + "_" + UTd.strftime("%y%m%d_%H%M")
                     f.close()
             dlgS.Destroy()
         dlg.Destroy()
         os.remove(scr_pth + "//tmp_last_fig.png")
+        os.remove(scr_pth + "//tmp_last_fig_imp.png")
 
 
 if __name__ == "__main__":
