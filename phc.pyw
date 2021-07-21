@@ -1155,6 +1155,13 @@ class MyApp(wx.App):
                     f.write('COSPAR ID=' + COSPAR + '\n')
                     f.write('NORAD ID=' + NORAD + '\n')
                     f.write('NAME=' + NAME + '\n')
+                    
+                    if tle:
+                        f.write("% TLE:"+ '\n')
+                        f.write('%\n% ' + tle_lines[0] + '\n')
+                        f.write('% ' + tle_lines[1] + '\n')
+                        f.write('% ' + tle_lines[2] + '\n%\n')
+                        
                     if self.chb_mo.GetValue():
                         f.write("NO standardization for mZ an Range... only m0 magnitude is given!!! \n")
                     if self.chb_inst.GetValue():
