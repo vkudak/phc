@@ -821,10 +821,18 @@ class MyApp(wx.App):
         S_Imp_V = copy(SAT.V)
 
         global s_fon_B, s_fon_V
-        # if len(FON_B2) > 0:
-        if isinstance(FON_B2, np.ndarray):
-            s_fon_B = FON_B2
-            s_fon_V = FON_V2
+        # if FON_B2 exist....
+        try:
+            FON_B2
+        except:
+            # no var declared (no FON)
+            s_fon_B = [0]*len(SAT.B)
+            s_fon_V = [0]*len(SAT.V)
+        else:
+            # FON exists
+            if isinstance(FON_B2, np.ndarray):
+                s_fon_B = FON_B2
+                s_fon_V = FON_V2
 
         # Standardization
         global Abs
