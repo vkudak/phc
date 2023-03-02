@@ -492,6 +492,7 @@ class MyApp(wx.App):
                             Zv.append(st.mV - Cv * (st.bmv) + 2.5 * m.log10(st.ImpV) + Kv*st.Mz)
                         Mza.append(st.Mz)
                         star.append(st)
+                        print st.mV, st.mV - Cv * (st.bmv) + 2.5 * m.log10(st.ImpV) + Kv*st.Mz
         except:
             if ind2 > self.list_box.GetCount():
                 Warn(self.frame, "Wrong group count! Check NPS")
@@ -821,10 +822,17 @@ class MyApp(wx.App):
         S_Imp_V = copy(SAT.V)
 
         global s_fon_B, s_fon_V
-        # if len(FON_B2) > 0:
-        if isinstance(FON_B2, np.ndarray):
-            s_fon_B = FON_B2
-            s_fon_V = FON_V2
+        # if FON_B2 exists ...
+        try:
+            FON_B2
+        except:
+            s_fon_B = [0]*len(SAT.B)
+            s_fon_V = [0]*len(SAT.V)
+        else:
+            if isinstance(FON_B2, np.ndarray):
+                s_fon_B = FON_B2
+                s_fon_V = FON_V2
+
 
         # Standardization
         global Abs
@@ -1155,6 +1163,13 @@ class MyApp(wx.App):
                     f.write('COSPAR ID=' + COSPAR + '\n')
                     f.write('NORAD ID=' + NORAD + '\n')
                     f.write('NAME=' + NAME + '\n')
+
+                    if tle:
+                        f.write("% TLE:" + '\n')
+                        f.write('%\n% ' + tle_lines[0] + '\n')
+                        f.write('% ' + tle_lines[1] + '\n')
+                        f.write('% ' + tle_lines[2] + '\n%\n')
+
                     if self.chb_mo.GetValue():
                         f.write("NO standardization for mZ an Range... only m0 magnitude is given!!! \n")
                     if self.chb_inst.GetValue():
