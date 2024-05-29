@@ -116,7 +116,7 @@ def lsqFit(y, x):
 
 def test_rms_mean():
     test_list = np.arange(22)
-    print 'Start=', test_list
+    print ('Start=', test_list)
     test_list = RMS_mean(test_list, 10)
-    print 'Stop=', test_list
-    print 'Yeah!'
+    print ('Stop=', test_list)
+    print ('Yeah!')

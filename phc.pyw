@@ -37,7 +37,7 @@ figsize = 12, 6  # 9, 6
 default_tel = 1  # 0- TPL; 1-AFU;
 scr_pth = os.path.dirname(os.path.realpath(__file__))
 culm_time = ""
-print "path="+ scr_pth
+print ("path="+ scr_pth)
 
 
 def mjd(utc_time):
@@ -68,7 +68,7 @@ def readNPS():
         f.close()
         return 1
     else:
-        print 'Can''t find NPS Catalog NPS.cat'
+        print ('Can''t find NPS Catalog NPS.cat')
         return 0
 
 
@@ -93,7 +93,7 @@ def read_phot_cat():
         f.close()
         return 1
     else:
-        print 'Can''t find photometric catalog ph.cat'
+        print ('Can''t find photometric catalog ph.cat')
         return 0
 
 
@@ -209,12 +209,12 @@ class MyApp(wx.App):
             self_path = os.path.dirname(os.path.abspath(__file__))
             wx.CallAfter(self.list_box.SetFocus)
         else:
-            print "File phc.xrc don't find"
+            print ("File phc.xrc don't find")
         return True
 
     def NPS_change(self, evt):
         c = self.lb_nps.GetCount()
-        print c
+        print(c)
         nl = []
         for i in range(0, c):
             tmp = self.lb_nps.GetString(i).split("=")
@@ -253,14 +253,14 @@ class MyApp(wx.App):
             self.OnOpen(self)
 
     def On_m0_ch(self, evt):
-        print self.chb_mo.GetValue()
+        print(self.chb_mo.GetValue())
         # if self.chb_mo.GetValue() == True:
         #     self.btn_eph.Disable()
         # else:
         #     self.btn_eph.Enable()
 
     def On_Ninst_ch(self, evt):
-        print self.chb_inst.GetValue()
+        print(self.chb_inst.GetValue())
         # if self.chb_inst.GetValue() == True:
         #     self.btn_eph.Disable()
         # else:
@@ -306,7 +306,7 @@ class MyApp(wx.App):
                         self.list_box.Append('Gr#' + str(N) + '-' + str(glist[N].c))
                 except Exception as E:
                     Warn(self.frame, "Wrong file format probably")
-                    print E.args
+                    print(E.args)
             self.StatusBar.SetStatusText('FileName=' + os.path.basename(path), 0)
         dlg.Destroy()
         # print culm_time
@@ -351,7 +351,7 @@ class MyApp(wx.App):
             dt = glist[item].dt
             UT = glist[item].Time
             Data = glist[item].Date.strip()
-            print UT
+            print(UT)
             j = 0
             Tt = []
             UTd = datetime.strptime(Data.replace(" ", "") + ' ' + UT, "%d.%m.%y %H:%M:%S")
@@ -427,8 +427,8 @@ class MyApp(wx.App):
 
         try:  # ------------------------------
             if 1:  # self.rb_nps.GetValue():
-                print "Calc system from NPS stars..."
-                NPS = range(11)
+                print("Calc system from NPS stars...")
+                NPS = list(range(11))
                 for nps in nps_list:
                     q = nps.split('=')
                     if len(q) > 1:
@@ -492,7 +492,7 @@ class MyApp(wx.App):
                             Zv.append(st.mV - Cv * (st.bmv) + 2.5 * m.log10(st.ImpV) + Kv*st.Mz)
                         Mza.append(st.Mz)
                         star.append(st)
-                        print st.mV, st.mV - Cv * (st.bmv) + 2.5 * m.log10(st.ImpV) + Kv*st.Mz
+                        print(st.mV, st.mV - Cv * (st.bmv) + 2.5 * m.log10(st.ImpV) + Kv*st.Mz)
         except:
             if ind2 > self.list_box.GetCount():
                 Warn(self.frame, "Wrong group count! Check NPS")
@@ -560,14 +560,14 @@ class MyApp(wx.App):
 
                 else:                     # Standard way
                     if len(Zv) > 0:
-                        print 'delete by RMS < 0.1 in V'
+                        print('delete by RMS < 0.1 in V')
                         Zv = pu.RMS_del(Zv, 0.1)
                         Avs = np.mean(Zv)
                         res = np.std(Zv)
                         self.lb_nps_res.Append('Av=%2.4f' % Avs)
                         self.lb_nps_res.Append('Av_StdDev=%2.4f' % res)
                     if len(Zb) > 0:
-                        print 'delete by RMS < 0.1 in B'
+                        print('delete by RMS < 0.1 in B')
                         Zb = pu.RMS_del(Zb, 0.1)
                         Abs = np.mean(Zb)
                         res = np.std(Zb)
@@ -613,7 +613,7 @@ class MyApp(wx.App):
         if dlg.ShowModal() == wx.ID_OK:
             paths = dlg.GetPaths()
             for path in paths:
-                print path
+                print(path)
                 ephf = open(path, 'r')
                 ext = os.path.splitext(path)
                 ext = ext[1]
@@ -685,12 +685,12 @@ class MyApp(wx.App):
                     try:
                         station.date = datetime.strptime(date.strip().replace(" ", "") + ' ' + time, "%d.%m.%y %H:%M:%S.%f")
                     except Exception:
-                        print "Error. Trying Options #2 - time without seconds fractions"
+                        print("Error. Trying Options #2 - time without seconds fractions")
                         station.date = datetime.strptime(date.strip().replace(" ", "") + ' ' + time, "%d.%m.%y %H:%M:%S")
                     el = []
                     rg = []
                     az = []
-                    print station.date
+                    print(station.date)
                     j = 1
                     while j < count:
                         sat.compute(station)
@@ -756,10 +756,10 @@ class MyApp(wx.App):
 
                 if r2_3 > r2_2:
                     FON_B2 = np.array(FON_B2_3)
-                    print "3rd order used for SAT FON_B interpretation R2 = %3.2f" % r2_3
+                    print("3rd order used for SAT FON_B interpretation R2 = %3.2f" % r2_3)
                 else:
                     FON_B2 = np.array(FON_B2_2)
-                    print "2nd order used for SAT FON_B interpretation R2 = %3.2f" % r2_3
+                    print("2nd order used for SAT FON_B interpretation R2 = %3.2f" % r2_3)
 
                 ###V
                 # FON_V2 = pu.interp2(FON_V, count, SAT.c)  # - 1
@@ -770,18 +770,18 @@ class MyApp(wx.App):
 
                 if r2_3 > r2_2:
                     FON_V2 = np.array(FON_V2_3)
-                    print "3rd order used for SAT FON_V interpretation R2 = %3.2f" % r2_3
+                    print("3rd order used for SAT FON_V interpretation R2 = %3.2f" % r2_3)
                 else:
                     FON_V2 = np.array(FON_V2_2)
-                    print "2nd order used for SAT FON_V interpretation R2 = %3.2f" % r2_2
+                    print("2nd order used for SAT FON_V interpretation R2 = %3.2f" % r2_2)
 
 
-                print "Interpolation DONE!!!"
-                print 'Count=', len(FON_V2)
+                print("Interpolation DONE!!!")
+                print('Count=', len(FON_V2))
                 while len(FON_V2) > SAT.c:
                     FON_V2 = np.delete(FON_V2, -1)
                     FON_B2 = np.delete(FON_B2, -1)
-                    print 'Count=', len(FON_V2)
+                    print('Count=', len(FON_V2))
                 '''
                 locale.setlocale(locale.LC_NUMERIC, 'C')#for graph
                 plt.figure()
@@ -802,7 +802,7 @@ class MyApp(wx.App):
         Tt = []
         timeFmt = DateFormatter("%H:%M:%S")
         UTd = datetime.strptime(SAT.Date.strip().replace(" ", "") + ' ' + SAT.Time, "%d.%m.%y %H:%M:%S")
-        print UTd
+        print(UTd)
         while jj < SAT.c:
             Tt.append(UTd + timedelta(seconds=jj * SAT.dt))
             jj = jj + 1
@@ -856,7 +856,7 @@ class MyApp(wx.App):
         # m_z and m_ro#
         if (self.chb_mo.GetValue() == False) and (self.chb_inst.GetValue() == False):  # if ephemeris is present
             global tle
-            print "tle file=", tle
+            print("tle file=", tle)
             if tle:
                 rr = self.calc_from_tle(SAT.c + 1,
                                                     SAT.Date.strip(),
@@ -923,7 +923,7 @@ class MyApp(wx.App):
         Tt = []
         timeFmt = DateFormatter("%H:%M:%S")
         UTd = datetime.strptime(SAT.Date.strip().replace(" ", "")+' '+SAT.Time, "%d.%m.%y %H:%M:%S")
-        print UTd
+        print(UTd)
         while jj < SAT.c:
             Tt.append(UTd+timedelta(seconds=jj*SAT.dt))
             jj = jj + 1
@@ -945,8 +945,13 @@ class MyApp(wx.App):
         if self.chb_inst.GetValue() is False:
             miny = max(maxB, maxV)
             maxy = min(minB, minV)
-            maxy = maxy - 0.5
-            # print miny, maxy
+            print(miny, maxy)
+            if maxy >0:
+                maxy = maxy - maxy*0.1 #0.5
+            else:
+                maxy = maxy - -1*(maxy * 0.1)  # 0.5
+
+            print (miny, maxy)
             plt.axis([Tmin, Tmax, miny, maxy])
             plt.ylabel('m_st')
         else:
@@ -1074,7 +1079,7 @@ class MyApp(wx.App):
                     f1.write('PH3 U11 B 80 0.005\n')
                     f2.write('PH3 U11 V 80 0.005\n')
                     cy = COSPAR[0:2]
-                    print 'cy=', cy
+                    print('cy=', cy)
                     if int(cy) > 50:
                         cy = '19' + cy
                     else:
@@ -1153,7 +1158,7 @@ class MyApp(wx.App):
                     f1.close()
                     f2.close()
                 else:  # UzhNU format
-                    print 'Saving in LKD UzhNU format'
+                    print('Saving in LKD UzhNU format')
                     f = open(ffpath, 'w')
                     T0 = datetime.strptime(SAT.Date.strip().replace(" ", "")
                                            + ' ' + SAT.Time, '%d.%m.%y %H:%M:%S')
@@ -1214,5 +1219,5 @@ class MyApp(wx.App):
 
 if __name__ == "__main__":
     app = MyApp(False)
-    print "Starting Application..."
+    print("Starting Application...")
     app.MainLoop()

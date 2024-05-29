@@ -97,8 +97,8 @@ def read(path):
 def test():
     test_file = "test.txt"
     L = read(test_file)
-    print 'Total Group count=', len(L) - 1
-    print 'Group #3 time=', L[3].Time
-    print 'Group #3 dt=', L[3].dt
-    print 'Group #3 count=', L[3].c
-    print 'Group #3 V array=', L[3].V
+    print ('Total Group count=', len(L) - 1)
+    print ('Group #3 time=', L[3].Time)
+    print ('Group #3 dt=', L[3].dt)
+    print ('Group #3 count=', L[3].c)
+    print ('Group #3 V array=', L[3].V)
